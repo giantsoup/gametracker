@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\PasswordlessLoginController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
@@ -33,3 +34,20 @@ Route::middleware('auth')->group(function () {
 
 Route::post('logout', App\Livewire\Actions\Logout::class)
     ->name('logout');
+
+// Add these routes to your existing guest middleware group
+Route::middleware('guest')->group(function () {
+    // Keep your existing routes
+
+    // Add new passwordless routes
+    Route::get('passwordless-login', [PasswordlessLoginController::class, 'showLoginForm'])
+        ->name('passwordless.login');
+
+    Route::post('passwordless-login', [PasswordlessLoginController::class, 'sendLoginLink'])
+        ->name('passwordless.send');
+});
+
+// Add this route outside any middleware group
+Route::get('verify-login/{email}/{token}', [PasswordlessLoginController::class, 'verifyLogin'])
+    ->middleware('signed')
+    ->name('verification.passwordless');

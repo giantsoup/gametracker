@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\User;
+use App\Notifications\PasswordlessLoginNotification;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
@@ -20,6 +22,12 @@ new #[Layout('components.layouts.auth')] class extends Component {
 
     public bool $remember = false;
 
+    // For passwordless login toggle
+    public bool $usePasswordless = false;
+
+    // Status message for passwordless login
+    public string $passwordlessStatus = '';
+
     /**
      * Handle an incoming authentication request.
      */
@@ -27,9 +35,15 @@ new #[Layout('components.layouts.auth')] class extends Component {
     {
         $this->validate();
 
+        // If using passwordless login, send login link
+        if ($this->usePasswordless) {
+            $this->sendPasswordlessLoginLink();
+            return;
+        }
+
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt(['email' => $this->email, 'password' => $this->password], $this->remember)) {
+        if (!Auth::attempt(['email' => $this->email, 'password' => $this->password], $this->remember)) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
@@ -44,11 +58,48 @@ new #[Layout('components.layouts.auth')] class extends Component {
     }
 
     /**
+     * Send a passwordless login link to the user's email.
+     */
+    public function sendPasswordlessLoginLink(): void
+    {
+        // Validate email exists in users table
+        $this->validate([
+            'email' => 'required|email|exists:users,email',
+        ]);
+
+        /** @var PasswordlessUserGuard $guard */
+        $guard = Auth::guard('web');
+        $loginLink = $guard->attemptPasswordlessLogin($this->email);
+
+        if (!$loginLink) {
+            throw ValidationException::withMessages([
+                'email' => __('This email is not registered or cannot use passwordless login.'),
+            ]);
+        }
+
+        // Send the login link via notification
+        $user = User::where('email', $this->email)->first();
+        $user->notify(new PasswordlessLoginNotification($loginLink));
+
+        $this->passwordlessStatus = __('We have sent a login link to your email address!');
+    }
+
+    /**
+     * Toggle between password and passwordless login methods.
+     */
+    public function toggleLoginMethod(): void
+    {
+        $this->usePasswordless = !$this->usePasswordless;
+        $this->passwordlessStatus = '';
+        $this->resetValidation();
+    }
+
+    /**
      * Ensure the authentication request is not rate limited.
      */
     protected function ensureIsNotRateLimited(): void
     {
-        if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
+        if (!RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
             return;
         }
 
@@ -74,10 +125,18 @@ new #[Layout('components.layouts.auth')] class extends Component {
 }; ?>
 
 <div class="flex flex-col gap-6">
-    <x-auth-header :title="__('Log in to your account')" :description="__('Enter your email and password below to log in')" />
+    <x-auth-header :title="__('Log in to your account')"
+                   :description="__('Enter your email and password below to log in')"/>
 
     <!-- Session Status -->
-    <x-auth-session-status class="text-center" :status="session('status')" />
+    <x-auth-session-status class="text-center" :status="session('status')"/>
+
+    <!-- Passwordless Login Status -->
+    @if ($passwordlessStatus)
+        <div class="text-center text-sm font-medium text-green-600 dark:text-green-400">
+            {{ $passwordlessStatus }}
+        </div>
+    @endif
 
     <form wire:submit="login" class="flex flex-col gap-6">
         <!-- Email Address -->
@@ -91,31 +150,45 @@ new #[Layout('components.layouts.auth')] class extends Component {
             placeholder="email@example.com"
         />
 
-        <!-- Password -->
-        <div class="relative">
-            <flux:input
-                wire:model="password"
-                :label="__('Password')"
-                type="password"
-                required
-                autocomplete="current-password"
-                :placeholder="__('Password')"
-            />
+        <!-- Password input (only shown when not using passwordless login) -->
+        @if (!$usePasswordless)
+            <div class="relative">
+                <flux:input
+                    wire:model="password"
+                    :label="__('Password')"
+                    type="password"
+                    required
+                    autocomplete="current-password"
+                    :placeholder="__('Password')"
+                />
 
-            @if (Route::has('password.request'))
-                <flux:link class="absolute end-0 top-0 text-sm" :href="route('password.request')" wire:navigate>
-                    {{ __('Forgot your password?') }}
-                </flux:link>
-            @endif
-        </div>
+                @if (Route::has('password.request'))
+                    <flux:link class="absolute end-0 top-0 text-sm" :href="route('password.request')" wire:navigate>
+                        {{ __('Forgot your password?') }}
+                    </flux:link>
+                @endif
+            </div>
 
-        <!-- Remember Me -->
-        <flux:checkbox wire:model="remember" :label="__('Remember me')" />
+            <!-- Remember Me -->
+            <flux:checkbox wire:model="remember" :label="__('Remember me')"/>
+        @endif
 
         <div class="flex items-center justify-end">
-            <flux:button variant="primary" type="submit" class="w-full">{{ __('Log in') }}</flux:button>
+            <flux:button variant="primary" type="submit" class="w-full">
+                {{ $usePasswordless ? __('Send Login Link') : __('Log in') }}
+            </flux:button>
         </div>
     </form>
+
+    <!-- Toggle login method -->
+    <div class="text-center">
+        <flux:button variant="link" wire:click="toggleLoginMethod" type="button">
+            {{ $usePasswordless
+                ? __('Use password to login')
+                : __('Login with email link (passwordless)')
+            }}
+        </flux:button>
+    </div>
 
     @if (Route::has('register'))
         <div class="space-x-1 rtl:space-x-reverse text-center text-sm text-zinc-600 dark:text-zinc-400">
