@@ -1,4 +1,3 @@
-// resources/views/admin/users/index.blade.php
 <x-layouts.app>
     <x-slot:header>
         <div class="flex items-center justify-between">
@@ -51,6 +50,9 @@
                                 <tr>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         {{ $user->name }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        {{ $user->nickname }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         {{ $user->email }}
