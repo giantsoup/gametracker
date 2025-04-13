@@ -14,7 +14,7 @@ class PasswordlessUserGuard extends SessionGuard
 {
     public function __construct(UserProvider $provider, Request $request)
     {
-        parent::__construct('web', $provider, session(), $request);
+        parent::__construct('passwordless', $provider, session()->driver(), $request);
     }
 
     public function attemptPasswordlessLogin(string $email): ?string

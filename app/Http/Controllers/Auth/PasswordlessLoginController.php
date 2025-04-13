@@ -11,11 +11,6 @@ use Illuminate\Support\Facades\Auth;
 
 class PasswordlessLoginController extends Controller
 {
-    public function showLoginForm()
-    {
-        return view('auth.passwordless-login');
-    }
-
     public function sendLoginLink(Request $request)
     {
         $request->validate([
@@ -25,7 +20,7 @@ class PasswordlessLoginController extends Controller
         $email = $request->input('email');
 
         /** @var PasswordlessUserGuard $guard */
-        $guard = Auth::guard('web');
+        $guard = Auth::guard('passwordless');
         $loginLink = $guard->attemptPasswordlessLogin($email);
 
         if (! $loginLink) {

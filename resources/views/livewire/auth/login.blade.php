@@ -1,5 +1,6 @@
 <?php
 
+use App\Auth\PasswordlessUserGuard;
 use App\Models\User;
 use App\Notifications\PasswordlessLoginNotification;
 use Illuminate\Auth\Events\Lockout;
@@ -23,7 +24,7 @@ new #[Layout('components.layouts.auth')] class extends Component {
     public bool $remember = false;
 
     // For passwordless login toggle
-    public bool $usePasswordless = false;
+    public bool $usePasswordless = true;
 
     // Status message for passwordless login
     public string $passwordlessStatus = '';
@@ -68,7 +69,7 @@ new #[Layout('components.layouts.auth')] class extends Component {
         ]);
 
         /** @var PasswordlessUserGuard $guard */
-        $guard = Auth::guard('web');
+        $guard = Auth::guard('passwordless');
         $loginLink = $guard->attemptPasswordlessLogin($this->email);
 
         if (!$loginLink) {
@@ -150,20 +151,19 @@ new #[Layout('components.layouts.auth')] class extends Component {
             placeholder="email@example.com"
         />
 
-        <!-- Password input (only shown when not using passwordless login) -->
         @if (!$usePasswordless)
             <div class="relative">
                 <flux:input
                     wire:model="password"
                     :label="__('Password')"
                     type="password"
-                    required
                     autocomplete="current-password"
                     :placeholder="__('Password')"
+                    required="required"
                 />
 
                 @if (Route::has('password.request'))
-                    <flux:link class="absolute end-0 top-0 text-sm" :href="route('password.request')" wire:navigate>
+                    <flux:link wire:navigate class="absolute end-0 top-0 text-sm" :href="route('password.request')">
                         {{ __('Forgot your password?') }}
                     </flux:link>
                 @endif
@@ -182,7 +182,7 @@ new #[Layout('components.layouts.auth')] class extends Component {
 
     <!-- Toggle login method -->
     <div class="text-center">
-        <flux:button variant="link" wire:click="toggleLoginMethod" type="button">
+        <flux:button variant="ghost" wire:click="toggleLoginMethod" type="button">
             {{ $usePasswordless
                 ? __('Use password to login')
                 : __('Login with email link (passwordless)')

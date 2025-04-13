@@ -17,7 +17,7 @@ class AuthServiceProvider extends ServiceProvider
         Auth::extend('passwordless', function ($app, $name, array $config) {
             return new PasswordlessUserGuard(
                 Auth::createUserProvider($config['provider'] ?? null),
-                $app['request']
+                $app->make('request')
             );
         });
 
@@ -45,7 +45,5 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('delete', function (User $user) {
             return $user->isAdmin();
         });
-
-        // You can add more specific gates as needed
     }
 }
