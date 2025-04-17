@@ -88,8 +88,21 @@ class ResourceTable extends Component
         return true;
     }
 
-    public function deleteResource(Model $resource): void
+    public function deleteResource($resource): void
     {
+        // Convert ID to Model instance if necessary
+        if (is_numeric($resource)) {
+            $resourceModel = $this->model::find($resource);
+
+            if (! $resourceModel) {
+                $this->dispatch('error', class_basename($this->model).' not found');
+
+                return;
+            }
+
+            $resource = $resourceModel;
+        }
+
         $resource->delete();
         $this->dispatch('success', class_basename($resource).' deleted successfully');
     }

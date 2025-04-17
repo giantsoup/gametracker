@@ -63,8 +63,10 @@
                 <tr class="transition-colors">
                     @foreach($columns as $key => $label)
                         <td class="px-6 py-4 whitespace-nowrap text-zinc-700 dark:text-zinc-300">
-                            @if($key === 'role' && method_exists($resource, 'getRoleBadgeAttribute'))
-                                {!! $resource->getRoleBadgeAttribute() !!}
+                            @if($key === 'role' && method_exists($this, 'getRoleBadge'))
+                                @php $badge = $this->getRoleBadge($resource->role); @endphp
+                                <flux:badge variant="pill"
+                                            color="{{ $badge['color'] }}">{{ $badge['text'] }}</flux:badge>
                             @else
                                 <flux:text>{{ $resource->{$key} }}</flux:text>
                             @endif
@@ -75,7 +77,7 @@
                             @if($hasShow)
                                 <flux:button
                                     href="{{ route($this->getResourceName() . '.show', $resource) }}"
-                                    variant="outline"
+                                    variant="ghost"
                                     size="xs"
                                     icon:trailing="eye"
                                 >
@@ -86,7 +88,7 @@
                             @if($hasEdit && $this->hasEditPermission($resource))
                                 <flux:button
                                     href="{{ route($this->getResourceName() . '.edit', $resource) }}"
-                                    variant="outline"
+                                    variant="ghost"
                                     size="xs"
                                     icon:trailing="pencil-square"
                                 >
@@ -98,9 +100,10 @@
                                 <flux:button
                                     wire:click="deleteResource({{ $resource->id }})"
                                     wire:confirm="Are you sure you want to delete this {{ Str::singular(Str::afterLast($this->getResourceName(), '.')) }}?"
-                                    variant="danger"
+                                    variant="ghost"
                                     size="xs"
                                     icon:trailing="trash"
+                                    class="text-red-500/80 hover:text-red-600 hover:bg-red-50 dark:text-red-400/80 dark:hover:text-red-300 dark:hover:bg-red-950/30"
                                 >
                                     Delete
                                 </flux:button>
