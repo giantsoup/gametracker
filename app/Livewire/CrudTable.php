@@ -10,6 +10,7 @@ use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;
+use LogicException;
 
 class CrudTable extends Component
 {
@@ -23,14 +24,17 @@ class CrudTable extends Component
 
     public int $perPage = 10;
 
-    // This can be overridden by the parent component
     public string $modelName;
 
-    public array $columns = [];
+    public string $modelRouteBase;
 
-    public array $searchFields = ['name', 'email'];
+    public array $columns;
 
-    public ?string $modelRouteBase = null;
+    public array $searchFields;
+
+    public bool $showCreateForm = false;
+
+    protected ?Model $modelInstance = null;
 
     protected $queryString = [
         'search' => ['except' => ''],
@@ -39,10 +43,65 @@ class CrudTable extends Component
         'perPage' => ['except' => 10],
     ];
 
+    public function toggleCreateForm(): void
+    {
+        $this->showCreateForm = ! $this->showCreateForm;
+        $this->resetForm();
+    }
+
+    public function resetForm(): void
+    {
+        // Reset all public properties that start with "form"
+        $properties = collect(get_object_vars($this))
+            ->filter(fn ($value, $key) => Str::startsWith($key, 'form'))
+            ->keys();
+
+        $this->reset($properties->toArray());
+        $this->resetValidation();
+    }
+
     public function mount(?string $resource = null): void
     {
         if ($resource) {
             $this->modelRouteBase = $resource;
+        }
+
+        $this->validateRequiredProperties();
+
+        // Initialize the model instance for permission checks
+        $this->modelInstance = new $this->modelName;
+    }
+
+    /**
+     * Validates that all required properties are set for the component to function properly
+     *
+     * @throws LogicException When required properties are missing
+     */
+    protected function validateRequiredProperties(): void
+    {
+        $errors = [];
+
+        if (empty($this->modelName)) {
+            $errors[] = '$modelName is required - you must specify the fully qualified model class name';
+        } elseif (! class_exists($this->modelName)) {
+            $errors[] = "\$modelName '{$this->modelName}' does not exist or could not be loaded";
+        }
+
+        if (empty($this->modelRouteBase)) {
+            $errors[] = '$modelRouteBase is required - you must specify the base route name for this resource';
+        }
+
+        if (empty($this->columns)) {
+            $errors[] = '$columns array is required - you must specify the columns to display';
+        }
+
+        if (empty($this->searchFields)) {
+            $errors[] = '$searchFields array is required - you must specify the fields to search on';
+        }
+
+        if (! empty($errors)) {
+            $errorMessage = "CrudTable component cannot initialize:\n- ".implode("\n- ", $errors);
+            throw new LogicException($errorMessage);
         }
     }
 
@@ -76,24 +135,37 @@ class CrudTable extends Component
             ->paginate($this->perPage);
     }
 
-    public function hasEditPermission(Model $modelName): bool
+    public function hasStorePermission(Model $model): bool
     {
         // This can be overridden by child classes to implement permission checks
         return true;
     }
 
-    public function hasDeletePermission(Model $modelName): bool
+    /**
+     * Create a new model instance.
+     * This method MUST be implemented in child classes.
+     */
+    public function createModel(Model $model): void
+    {
+        $className = class_basename($this);
+        throw new LogicException("The createModel() method must be implemented in the {$className} class.");
+    }
+
+    public function hasEditPermission(Model $model): bool
     {
         // This can be overridden by child classes to implement permission checks
         return true;
     }
 
-    public function deleteModel($modelID): void
+    /**
+     * Delete a model instance.
+     * Default implementation that works with any model.
+     * Can be overridden for custom delete logic.
+     */
+    public function deleteModel(Model $model): void
     {
-        $model = $this->modelName::findOrFail($modelID);
-
-        if (! $model) {
-            $this->dispatch('error', class_basename($this->modelName).' not found');
+        if (! $this->hasDeletePermission($model)) {
+            $this->dispatch('error', 'You do not have permission to delete this '.class_basename($model));
 
             return;
         }
@@ -102,8 +174,19 @@ class CrudTable extends Component
         $this->dispatch('success', class_basename($model).' deleted successfully');
     }
 
+    public function hasDeletePermission(Model $model): bool
+    {
+        // This can be overridden by child classes to implement permission checks
+        return true;
+    }
+
     public function render(): View
     {
+        // Initialize modelInstance if we have a valid model class
+        if (class_exists($this->modelName)) {
+            $this->modelInstance = new $this->modelName;
+        }
+
         return view('livewire.crud-table', [
             'resources' => $this->resources,
             'canCreate' => $this->hasCreatePermission() && Route::has($this->getResourceName().'.create'),
@@ -114,7 +197,11 @@ class CrudTable extends Component
         ]);
     }
 
-    public function hasCreatePermission(): bool
+    /**
+     * Check if the user has permission to create a model.
+     * Can be overridden by child classes to implement permission checks.
+     */
+    public function hasCreatePermission(?Model $model = null): bool
     {
         // This can be overridden by child classes to implement permission checks
         return true;
@@ -122,14 +209,12 @@ class CrudTable extends Component
 
     public function getResourceName(): string
     {
-        if (! $this->modelRouteBase) {
-            // Try to guess from the model class name
-            $modelClass = class_basename($this->modelName);
-
-            return Str::plural(Str::kebab($modelClass));
-        }
-
         return $this->modelRouteBase;
+    }
+
+    public function getFormConfig(): array
+    {
+        return [];
     }
 
     /**

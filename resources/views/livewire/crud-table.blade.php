@@ -1,14 +1,43 @@
 <div class="w-full">
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         @if($canCreate)
-            <flux:button
-                href="{{ route($createRoute) }}"
-                variant="primary"
-                size="base"
-                class="whitespace-nowrap"
-            >
-                Create {{ $this->getFormattedResourceName() }}
-            </flux:button>
+            @if(method_exists($this, 'toggleCreateForm'))
+                <div class="relative">
+                    <flux:button
+                        wire:click="toggleCreateForm"
+                        variant="primary"
+                        size="base"
+                        class="whitespace-nowrap"
+                    >
+                        Add {{ $this->getFormattedResourceName() }}
+                    </flux:button>
+
+                    @if($this->showCreateForm)
+                        {{--
+                        This section renders the form for creating a new resource.
+                        The form is rendered using the FormRender interface which allows
+                        each component that extends CrudTable to define its own form layout
+                        and fields through the getFormConfig() method.
+                        --}}
+                        <x-form-render
+                            :config="$this->getFormConfig()"
+                            :model="$this"
+                            :resource-name="$this->getFormattedResourceName()"
+                            submit-action="createModel"
+                            cancel-action="toggleCreateForm"
+                        />
+                    @endif
+                </div>
+            @else
+                <flux:button
+                    href="{{ route($createRoute) }}"
+                    variant="primary"
+                    size="base"
+                    class="whitespace-nowrap"
+                >
+                    Create {{ $this->getFormattedResourceName() }}
+                </flux:button>
+            @endif
         @endif
 
         <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
