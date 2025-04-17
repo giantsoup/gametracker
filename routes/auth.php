@@ -1,7 +1,5 @@
 <?php
 
-use App\Http\Controllers\Admin\AdminController;
-use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\PasswordlessLoginController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
@@ -29,22 +27,6 @@ Route::middleware('auth')->group(function () {
 
     Volt::route('confirm-password', 'auth.confirm-password')
         ->name('password.confirm');
-});
-
-Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
-    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
-    Route::get('/settings', [AdminController::class, 'settings'])->name('admin.settings');
-    Route::get('/analytics', [AdminController::class, 'analytics'])->name('admin.analytics');
-    Route::get('/notifications', [AdminController::class, 'notifications'])->name('admin.notifications');
-    Route::get('/logs', [AdminController::class, 'logs'])->name('admin.logs');
-
-    // User Management Routes
-    Route::resource('/users', UserController::class, [
-        'as' => 'admin',
-    ]);
-    // Livewire Route for User Management
-    Volt::route('/users-management', 'admin.user-management')
-        ->name('admin.users-management');
 });
 
 Route::post('logout', App\Livewire\Actions\Logout::class)
