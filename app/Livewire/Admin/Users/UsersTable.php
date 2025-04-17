@@ -3,15 +3,15 @@
 namespace App\Livewire\Admin\Users;
 
 use App\Enums\UserRole;
-use App\Livewire\ResourceTable;
+use App\Livewire\CrudTable;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
-class UsersTable extends ResourceTable
+class UsersTable extends CrudTable
 {
-    public string $model = User::class;
+    public string $modelName = User::class;
 
-    public ?string $resource = 'admin.users';
+    public ?string $modelRouteBase = 'admin.users';
 
     public array $columns = [
         'name' => 'Name',
@@ -25,7 +25,7 @@ class UsersTable extends ResourceTable
     /**
      * Map role values to their corresponding badge colors
      */
-    public function getRoleBadge($role)
+    public function getRoleBadge($role): array
     {
         $colors = [
             UserRole::ADMIN->value => 'red',
@@ -48,32 +48,29 @@ class UsersTable extends ResourceTable
         return auth()->id() !== $model->id;
     }
 
-    public function deleteUser($user): void
+    public function deleteModel($modelID): void
     {
-        // Convert ID to User model if an integer is provided
-        if (is_numeric($user)) {
-            $user = User::find($user);
+        $model = $this->modelName::findOrFail($modelID);
 
-            if (! $user) {
-                $this->dispatch('error', 'User not found');
+        if (! $model) {
+            $this->dispatch('error', class_basename($this->modelName).' not found');
 
-                return;
-            }
+            return;
         }
 
-        if (auth()->user()->id === $user->id) {
+        if (auth()->user()->id === $model->id) {
             $this->dispatch('error', 'You cannot delete yourself');
 
             return;
         }
 
-        if ($user->id === 1) {
+        if ($model->id === 1) {
             $this->dispatch('error', 'You cannot delete the system user');
 
             return;
         }
 
-        $user->delete();
+        $model->delete();
         $this->dispatch('success', 'User deleted successfully');
     }
 }

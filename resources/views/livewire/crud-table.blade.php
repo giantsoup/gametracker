@@ -98,8 +98,8 @@
 
                             @if($hasDestroy && $this->hasDeletePermission($resource))
                                 <flux:button
-                                    wire:click="deleteResource({{ $resource->id }})"
-                                    wire:confirm="Are you sure you want to delete this {{ Str::singular(Str::afterLast($this->getResourceName(), '.')) }}?"
+                                    wire:click="deleteModel({{ $resource->id }})"
+                                    wire:confirm="Are you sure you want to delete this {{ $this->getSingularResourceName() }}?"
                                     variant="ghost"
                                     size="xs"
                                     icon:trailing="trash"

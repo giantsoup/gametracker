@@ -11,7 +11,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-class ResourceTable extends Component
+class CrudTable extends Component
 {
     use WithPagination;
 
@@ -24,13 +24,13 @@ class ResourceTable extends Component
     public int $perPage = 10;
 
     // This can be overridden by the parent component
-    public string $model;
+    public string $modelName;
 
     public array $columns = [];
 
     public array $searchFields = ['name', 'email'];
 
-    public ?string $resource = null;
+    public ?string $modelRouteBase = null;
 
     protected $queryString = [
         'search' => ['except' => ''],
@@ -39,10 +39,10 @@ class ResourceTable extends Component
         'perPage' => ['except' => 10],
     ];
 
-    public function mount(?string $resource = null)
+    public function mount(?string $resource = null): void
     {
         if ($resource) {
-            $this->resource = $resource;
+            $this->modelRouteBase = $resource;
         }
     }
 
@@ -64,7 +64,7 @@ class ResourceTable extends Component
     #[Computed(key: 'resources')]
     public function resources()
     {
-        return $this->model::query()
+        return $this->modelName::query()
             ->when($this->search, function (Builder $query) {
                 $query->where(function (Builder $subQuery) {
                     foreach ($this->searchFields as $field) {
@@ -76,40 +76,35 @@ class ResourceTable extends Component
             ->paginate($this->perPage);
     }
 
-    public function hasEditPermission(Model $model): bool
+    public function hasEditPermission(Model $modelName): bool
     {
         // This can be overridden by child classes to implement permission checks
         return true;
     }
 
-    public function hasDeletePermission(Model $model): bool
+    public function hasDeletePermission(Model $modelName): bool
     {
         // This can be overridden by child classes to implement permission checks
         return true;
     }
 
-    public function deleteResource($resource): void
+    public function deleteModel($modelID): void
     {
-        // Convert ID to Model instance if necessary
-        if (is_numeric($resource)) {
-            $resourceModel = $this->model::find($resource);
+        $model = $this->modelName::findOrFail($modelID);
 
-            if (! $resourceModel) {
-                $this->dispatch('error', class_basename($this->model).' not found');
+        if (! $model) {
+            $this->dispatch('error', class_basename($this->modelName).' not found');
 
-                return;
-            }
-
-            $resource = $resourceModel;
+            return;
         }
 
-        $resource->delete();
-        $this->dispatch('success', class_basename($resource).' deleted successfully');
+        $model->delete();
+        $this->dispatch('success', class_basename($model).' deleted successfully');
     }
 
     public function render(): View
     {
-        return view('livewire.resource-table', [
+        return view('livewire.crud-table', [
             'resources' => $this->resources,
             'canCreate' => $this->hasCreatePermission() && Route::has($this->getResourceName().'.create'),
             'createRoute' => $this->getResourceName().'.create',
@@ -127,14 +122,14 @@ class ResourceTable extends Component
 
     public function getResourceName(): string
     {
-        if (! $this->resource) {
+        if (! $this->modelRouteBase) {
             // Try to guess from the model class name
-            $modelClass = class_basename($this->model);
+            $modelClass = class_basename($this->modelName);
 
             return Str::plural(Str::kebab($modelClass));
         }
 
-        return $this->resource;
+        return $this->modelRouteBase;
     }
 
     /**
@@ -145,5 +140,14 @@ class ResourceTable extends Component
         $routeName = $this->getResourceName();
 
         return Str::singular(Str::title(Str::replace('-', ' ', Str::afterLast($routeName, '.'))));
+    }
+
+    /**
+     * Get the singular form of the resource name
+     * This can be overridden by child classes to implement custom resource naming
+     */
+    public function getSingularResourceName(): string
+    {
+        return Str::singular(Str::afterLast($this->getResourceName(), '.'));
     }
 }
