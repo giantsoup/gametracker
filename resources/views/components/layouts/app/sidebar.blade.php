@@ -25,10 +25,10 @@
                 {{ __('Admin Dashboard') }}
             </flux:navlist.item>
 
-            <flux:navlist.item icon="users" :href="route('admin.users-management')"
-                               :current="request()->routeIs('admin.users-management') || request()->routeIs('admin.users.*')"
+            <flux:navlist.item icon="users" :href="route('admin.users.index')"
+                               :current="request()->routeIs('admin.users.index') || request()->routeIs('admin.users.*')"
                                wire:navigate>
-                {{ __('User Management') }}
+                {{ __('Users') }}
             </flux:navlist.item>
 
             <flux:navlist.item icon="cog-6-tooth" :href="route('admin.settings')"

@@ -31,9 +31,6 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('admin/users', UserController::class, [
             'as' => 'admin',
         ]);
-        // Livewire Route for User Management
-        Volt::route('admin/users-management', 'admin.user-management')
-            ->name('admin.users-management');
     });
 });
 

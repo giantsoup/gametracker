@@ -1,14 +1,17 @@
 <?php
 
-namespace App\Livewire\Admin;
+namespace App\Livewire\Admin\Users;
 
 use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\Computed;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 
+#[Title('Create User')]
 class CreateUserForm extends Component
 {
     public string $name = '';
@@ -19,7 +22,8 @@ class CreateUserForm extends Component
 
     public string $role = 'user'; // Default role
 
-    public function getRolesProperty(): array
+    #[Computed]
+    public function roles(): array
     {
         return UserRole::getSelectOptions();
     }
@@ -37,7 +41,7 @@ class CreateUserForm extends Component
             'role' => $this->role,
         ]);
 
-        // Using Laravel's session flash for success message
+        // Using Laravel's session flash for a success message
         session()->flash('success', 'User created successfully. They can now use passwordless login.');
 
         $this->redirect(route('admin.users.index'), navigate: true);
@@ -45,7 +49,7 @@ class CreateUserForm extends Component
 
     public function render()
     {
-        return view('livewire.admin.create-user-form');
+        return view('livewire.admin.users.create-user-form');
     }
 
     protected function rules(): array

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Admin;
+namespace App\Livewire\Admin\Users;
 
 use App\Livewire\ResourceTable;
 use App\Models\User;
@@ -31,6 +31,12 @@ class UsersTable extends ResourceTable
     {
         if (auth()->user()->id === $resource->id) {
             $this->dispatch('error', 'You cannot delete yourself');
+
+            return;
+        }
+
+        if ($resource->id === 1) {
+            $this->dispatch('error', 'You cannot delete the system user');
 
             return;
         }
