@@ -1,4 +1,4 @@
-<div class="absolute z-50 mt-2 w-full sm:w-96 bg-white dark:bg-zinc-800 rounded-lg shadow-lg border border-zinc-200 dark:border-zinc-700 p-4">
+<div>
     <div class="flex justify-between items-center mb-4">
         <h3 class="text-lg font-medium">Create New {{ $resourceName }}</h3>
         <button wire:click="toggleCreateForm"
@@ -17,7 +17,7 @@
                     $fieldName = $field['name'];
                 @endphp
                 <div
-                        class="absolute z-50 mt-2 w-full sm:w-96 bg-white dark:bg-zinc-800 rounded-lg shadow-lg border border-zinc-200 dark:border-zinc-700 p-4">
+                    class="absolute z-50 mt-2 w-full sm:w-96 bg-white dark:bg-zinc-800 rounded-lg shadow-lg border border-zinc-200 dark:border-zinc-700 p-4">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-lg font-medium">Create {{ $resourceName }}</h3>
                         <button wire:click="toggleCreateForm"
@@ -30,14 +30,14 @@
                         @foreach($formConfig as $field)
                             <div>
                                 <flux:label
-                                        for="{{ $field['name'] }}">{{ $field['label'] ?? Str::title($field['name']) }}</flux:label>
+                                    for="{{ $field['name'] }}">{{ $field['label'] ?? Str::title($field['name']) }}</flux:label>
 
                                 @if(($field['type'] ?? 'text') === 'select')
                                     <flux:select
-                                            wire:model="{{ $field['name'] }}"
-                                            id="{{ $field['name'] }}"
-                                            class="w-full mt-1"
-                                            {{ isset($field['required']) && $field['required'] ? 'required' : '' }}
+                                        wire:model="{{ $field['name'] }}"
+                                        id="{{ $field['name'] }}"
+                                        class="w-full mt-1"
+                                        {{ isset($field['required']) && $field['required'] ? 'required' : '' }}
                                     >
                                         <option value="">
                                             Select {{ $field['label'] ?? Str::title($field['name']) }}</option>
@@ -47,11 +47,11 @@
                                     </flux:select>
                                 @else
                                     <flux:input
-                                            wire:model="{{ $field['name'] }}"
-                                            id="{{ $field['name'] }}"
-                                            type="{{ $field['type'] ?? 'text' }}"
-                                            class="w-full mt-1"
-                                            {{ isset($field['required']) && $field['required'] ? 'required' : '' }}
+                                        wire:model="{{ $field['name'] }}"
+                                        id="{{ $field['name'] }}"
+                                        type="{{ $field['type'] ?? 'text' }}"
+                                        class="w-full mt-1"
+                                        {{ isset($field['required']) && $field['required'] ? 'required' : '' }}
                                     />
                                 @endif
 
@@ -67,17 +67,17 @@
 
                         <div class="flex justify-end">
                             <flux:button
-                                    variant="secondary"
-                                    size="base"
-                                    wire:click.prevent="toggleCreateForm"
-                                    class="mr-2"
+                                variant="secondary"
+                                size="base"
+                                wire:click.prevent="toggleCreateForm"
+                                class="mr-2"
                             >
                                 Cancel
                             </flux:button>
                             <flux:button
-                                    variant="primary"
-                                    size="base"
-                                    type="submit"
+                                variant="primary"
+                                size="base"
+                                type="submit"
                             >
                                 Create
                             </flux:button>
@@ -88,10 +88,10 @@
 
                 @if($inputType === 'select')
                     <flux:select
-                            wire:model="{{ $fieldName }}"
-                            id="{{ $fieldName }}"
-                            class="w-full mt-1"
-                            @if($required) required @endif
+                        wire:model="{{ $fieldName }}"
+                        id="{{ $fieldName }}"
+                        class="w-full mt-1"
+                        @if($required) required @endif
                     >
                         <option value="">Select {{ $label }}</option>
                         @foreach($field['options'] as $value => $optionLabel)
@@ -100,11 +100,11 @@
                     </flux:select>
                 @else
                     <flux:input
-                            wire:model="{{ $fieldName }}"
-                            id="{{ $fieldName }}"
-                            type="{{ $inputType }}"
-                            class="w-full mt-1"
-                            @if($required) required @endif
+                        wire:model="{{ $fieldName }}"
+                        id="{{ $fieldName }}"
+                        type="{{ $inputType }}"
+                        class="w-full mt-1"
+                        @if($required) required @endif
                     />
                 @endif
 
@@ -112,24 +112,24 @@
 
                 @if(isset($field['description']))
                     <flux:text
-                            class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{{ $field['description'] }}</flux:text>
+                        class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{{ $field['description'] }}</flux:text>
                 @endif
             </div>
         @endforeach
 
         <div class="flex justify-end">
             <flux:button
-                    variant="secondary"
-                    size="base"
-                    wire:click.prevent="toggleCreateForm"
-                    class="mr-2"
+                variant="secondary"
+                size="base"
+                wire:click.prevent="toggleCreateForm"
+                class="mr-2"
             >
                 Cancel
             </flux:button>
             <flux:button
-                    variant="primary"
-                    size="base"
-                    type="submit"
+                variant="primary"
+                size="base"
+                type="submit"
             >
                 Create {{ $resourceName }}
             </flux:button>

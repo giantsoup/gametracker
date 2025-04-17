@@ -28,11 +28,13 @@ class UsersTable extends CrudTable
     // Define form properties - these will be used by the form renderer
     public string $name = '';
 
+    public string $nickname = '';
+
     public string $email = '';
 
     public string $password = '';
 
-    public string $role = '';
+    public string $role = 'user';
 
     /**
      * Map role values to their corresponding badge colors
@@ -52,6 +54,11 @@ class UsersTable extends CrudTable
             'color' => $color,
             'text' => ucfirst(strtolower($roleValue)),
         ];
+    }
+
+    public function getCreateFormComponent(): ?string
+    {
+        return 'admin.users.create-user-form';
     }
 
     /**

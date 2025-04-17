@@ -52,13 +52,11 @@ class FormRender extends Component
         $this->resourceName = $resourceName;
         $this->submitAction = $submitAction;
         $this->cancelAction = $cancelAction;
+
+        // dump all the properties
+        dump($this);
     }
 
-    /**
-     * Get the view / contents that represent the component.
-     *
-     * @return \Illuminate\Contracts\View\View
-     */
     public function render()
     {
         return view('components.form-render');

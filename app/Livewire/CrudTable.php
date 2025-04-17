@@ -16,6 +16,14 @@ class CrudTable extends Component
 {
     use WithPagination;
 
+    public bool $includeCreateFunctionality = true;
+
+    public bool $includeDeleteFunctionality = true;
+
+    public bool $includeShowFunctionality = true;
+
+    public bool $includeEditFunctionality = true;
+
     public string $search = '';
 
     public string $sortField = 'created_at';
@@ -46,7 +54,6 @@ class CrudTable extends Component
     public function toggleCreateForm(): void
     {
         $this->showCreateForm = ! $this->showCreateForm;
-        $this->resetForm();
     }
 
     public function resetForm(): void
@@ -103,6 +110,15 @@ class CrudTable extends Component
             $errorMessage = "CrudTable component cannot initialize:\n- ".implode("\n- ", $errors);
             throw new LogicException($errorMessage);
         }
+    }
+
+    /**
+     * Optionally provide a create form component.
+     * Override this in the child class to return a non-null value.
+     */
+    public function getCreateFormComponent(): ?string
+    {
+        return null;
     }
 
     public function sortBy(string $field): void
@@ -182,6 +198,7 @@ class CrudTable extends Component
 
     public function render(): View
     {
+        //        dd(class_exists($this->modelName));
         // Initialize modelInstance if we have a valid model class
         if (class_exists($this->modelName)) {
             $this->modelInstance = new $this->modelName;

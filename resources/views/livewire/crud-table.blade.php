@@ -1,32 +1,32 @@
 <div class="w-full">
+    @if($includeCreateFunctionality && $canCreate && method_exists($this, 'toggleCreateForm'))
+        <div class="mb-6">
+            <div class="overflow-hidden transition-all duration-300 ease-in-out"
+                 style="{{ $this->showCreateForm ? 'max-height: auto;' : 'max-height: 0;' }}">
+                @if($this->showCreateForm)
+                    <div
+                        class="bg-white dark:bg-zinc-800 rounded-lg shadow-lg border border-zinc-200 dark:border-zinc-700 p-4 mb-4">
+                        @if(method_exists($this, 'getCreateFormComponent') && $component = $this->getCreateFormComponent())
+                            @livewire($component)
+                        @endif
+                    </div>
+                @endif
+            </div>
+        </div>
+    @endif
+
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        @if($canCreate)
+        @if($includeCreateFunctionality && $canCreate)
             @if(method_exists($this, 'toggleCreateForm'))
-                <div class="relative">
+                <div>
                     <flux:button
                         wire:click="toggleCreateForm"
                         variant="primary"
                         size="base"
-                        class="whitespace-nowrap"
+                        class="whitespace-nowrap {{ $this->showCreateForm ? 'hidden' : '' }}"
                     >
                         Add {{ $this->getFormattedResourceName() }}
                     </flux:button>
-
-                    @if($this->showCreateForm)
-                        {{--
-                        This section renders the form for creating a new resource.
-                        The form is rendered using the FormRender interface which allows
-                        each component that extends CrudTable to define its own form layout
-                        and fields through the getFormConfig() method.
-                        --}}
-                        <x-form-render
-                            :config="$this->getFormConfig()"
-                            :model="$this"
-                            :resource-name="$this->getFormattedResourceName()"
-                            submit-action="createModel"
-                            cancel-action="toggleCreateForm"
-                        />
-                    @endif
                 </div>
             @else
                 <flux:button
@@ -82,9 +82,11 @@
                         </div>
                     </th>
                 @endforeach
-                <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                    Actions
-                </th>
+                @if($includeShowFunctionality || $includeEditFunctionality || $includeDeleteFunctionality)
+                    <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                        Actions
+                    </th>
+                @endif
             </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 bg-white dark:divide-zinc-700 dark:bg-zinc-900">
@@ -103,7 +105,7 @@
                     @endforeach
                     <td class="px-6 py-4 text-right whitespace-nowrap">
                         <div class="flex justify-end gap-2">
-                            @if($hasShow)
+                            @if($includeShowFunctionality && $hasShow)
                                 <flux:button
                                     href="{{ route($this->getResourceName() . '.show', $resource) }}"
                                     variant="ghost"
@@ -114,18 +116,7 @@
                                 </flux:button>
                             @endif
 
-                            @if($hasEdit && $this->hasEditPermission($resource))
-                                <flux:button
-                                    href="{{ route($this->getResourceName() . '.edit', $resource) }}"
-                                    variant="ghost"
-                                    size="xs"
-                                    icon:trailing="pencil-square"
-                                >
-                                    Edit
-                                </flux:button>
-                            @endif
-
-                            @if($hasDestroy && $this->hasDeletePermission($resource))
+                            @if($includeEditFunctionality && $hasEdit && $this->hasEditPermission($resource))
                                 <flux:button
                                     wire:click="deleteModel({{ $resource->id }})"
                                     wire:confirm="Are you sure you want to delete this {{ $this->getSingularResourceName() }}?"
@@ -142,7 +133,8 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="{{ count($columns) + 1 }}" class="px-6 py-8 text-center">
+                    <td colspan="{{ count($columns) + ($includeShowFunctionality || $includeEditFunctionality || $includeDeleteFunctionality ? 1 : 0) }}"
+                        class="px-6 py-8 text-center">
                         <div class="flex flex-col items-center justify-center">
                             <flux:icon icon="document-search" variant="mini"
                                        class="h-12 w-12 mb-4 text-zinc-400 dark:text-zinc-600"/>
