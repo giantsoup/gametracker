@@ -1,13 +1,13 @@
 <div class="w-full">
     @if($includeCreateFunctionality && $canCreate && method_exists($this, 'toggleCreateForm'))
-        <div class="mb-6">
+        <div class="pb-6">
             <div class="overflow-hidden transition-all duration-300 ease-in-out"
                  style="{{ $this->showCreateForm ? 'max-height: auto;' : 'max-height: 0;' }}">
                 @if($this->showCreateForm)
                     <div
                         class="bg-white dark:bg-zinc-800 rounded-lg shadow-lg border border-zinc-200 dark:border-zinc-700 p-4 mb-4">
                         @if(method_exists($this, 'getCreateFormComponent') && $component = $this->getCreateFormComponent())
-                            @livewire($component)
+                            @livewire($formData['component'], $formData['componentData'] ?? [])
                         @endif
                     </div>
                 @endif
@@ -149,7 +149,9 @@
         </table>
     </div>
 
-    <div class="mt-6">
-        {{ $resources->links() }}
-    </div>
+    @if($includePaginationFunctionality && method_exists($resources, 'hasPages') && $resources->hasPages())
+        <div class="mt-6">
+            {{ $resources->links() }}
+        </div>
+    @endif
 </div>

@@ -5,13 +5,15 @@ namespace App\Livewire\Admin\Users;
 use App\Enums\UserRole;
 use App\Livewire\CrudTable;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules\Password;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\On;
 
 class UsersTable extends CrudTable
 {
+    public bool $includePaginationFunctionality = false;
+
     public string $modelName = User::class;
 
     public string $modelRouteBase = 'admin.users';
@@ -36,6 +38,62 @@ class UsersTable extends CrudTable
 
     public string $role = 'user';
 
+    public array $formData = [];
+
+    public function mount(?string $resource = null): void
+    {
+        parent::mount($resource);
+
+        $this->formData = $this->getCreateForm();
+    }
+
+    /**
+     * Return the component name and component data for the create form
+     */
+    public function getCreateForm(): array
+    {
+        return [
+            'component' => $this->getCreateFormComponent(),
+            'componentData' => $this->getCreateComponentData(),
+        ];
+    }
+
+    public function getCreateFormComponent(): ?string
+    {
+        return 'admin.users.create-user-form';
+    }
+
+    /**
+     * Get the component data to pass to the create user form component
+     */
+    public function getCreateComponentData(): array
+    {
+        return [
+            'roles' => $this->roles(), // Pass the roles array to the child component
+        ];
+    }
+
+    #[Computed]
+    public function roles(): array
+    {
+        return UserRole::getSelectOptions();
+    }
+
+    #[Computed(key: 'resources')]
+    public function resources()
+    {
+        return $this->modelName::query()
+            ->when($this->search, function (Builder $query) {
+                $query->where(function (Builder $subQuery) {
+                    foreach ($this->searchFields as $field) {
+                        $subQuery->orWhere($field, 'like', '%'.$this->search.'%');
+                    }
+                });
+            })
+            ->orderBy($this->sortField, $this->sortDirection)
+            ->get();
+    }
+
     /**
      * Map role values to their corresponding badge colors
      */
@@ -54,52 +112,6 @@ class UsersTable extends CrudTable
             'color' => $color,
             'text' => ucfirst(strtolower($roleValue)),
         ];
-    }
-
-    public function getCreateFormComponent(): ?string
-    {
-        return 'admin.users.create-user-form';
-    }
-
-    /**
-     * Define the form configuration for creating/editing users
-     */
-    public function getFormConfig(): array
-    {
-        return [
-            [
-                'name' => 'name',
-                'label' => 'Name',
-                'type' => 'text',
-                'required' => true,
-            ],
-            [
-                'name' => 'email',
-                'label' => 'Email',
-                'type' => 'email',
-                'required' => true,
-            ],
-            [
-                'name' => 'password',
-                'label' => 'Password',
-                'type' => 'password',
-                'required' => true,
-            ],
-            [
-                'name' => 'role',
-                'label' => 'Role',
-                'type' => 'select',
-                'required' => true,
-                'options' => $this->roles(),
-                'description' => 'Select the user\'s role to define their permissions',
-            ],
-        ];
-    }
-
-    #[Computed]
-    public function roles(): array
-    {
-        return UserRole::getSelectOptions();
     }
 
     public function hasCreatePermission(?Model $model = null): bool
@@ -135,30 +147,12 @@ class UsersTable extends CrudTable
     }
 
     /**
-     * Create a new user
+     * Listen for the user-created event and refresh the data
      */
-    public function createModel(Model $model): void
+    #[On('user-created')]
+    public function refreshAfterUserCreated(): void
     {
-        $this->validate();
-
-        User::create([
-            'name' => $this->name,
-            'email' => $this->email,
-            'password' => Hash::make($this->password),
-            'role' => $this->role,
-        ]);
-
-        $this->toggleCreateForm();
-        $this->dispatch('success', 'User created successfully');
-    }
-
-    protected function rules(): array
-    {
-        return [
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', Password::defaults()],
-            'role' => ['required', 'string'],
-        ];
+        // Refresh the resources (users) data
+        $this->resetPage();
     }
 }
