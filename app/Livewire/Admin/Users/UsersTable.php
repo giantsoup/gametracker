@@ -94,26 +94,6 @@ class UsersTable extends CrudTable
             ->get();
     }
 
-    /**
-     * Map role values to their corresponding badge colors
-     */
-    public function getRoleBadge($role): array
-    {
-        $colors = [
-            UserRole::ADMIN->value => 'red',
-            UserRole::USER->value => 'blue',
-            // Add more roles and their colors here as needed
-        ];
-
-        $roleValue = $role->value;
-        $color = $colors[$roleValue] ?? 'zinc';
-
-        return [
-            'color' => $color,
-            'text' => ucfirst(strtolower($roleValue)),
-        ];
-    }
-
     public function hasCreatePermission(?Model $model = null): bool
     {
         return auth()->user()->role === UserRole::ADMIN;
@@ -163,5 +143,20 @@ class UsersTable extends CrudTable
     {
         // Refresh the resources (users) data
         $this->resetPage();
+    }
+
+    public function renderCustomColumn($key, $resource): ?string
+    {
+        if ($key === 'role' && method_exists($this, 'getRoleBadge')) {
+            $badge = $resource->getRoleBadge();
+
+            return view('flux.badge.index', [
+                'variant' => 'pill',
+                'color' => $badge['color'],
+                'text' => $badge['text'],
+            ]);
+        }
+
+        return null;
     }
 }

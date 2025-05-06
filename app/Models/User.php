@@ -58,6 +58,26 @@ class User extends Authenticatable
     }
 
     /**
+     * Map role values to their corresponding badge colors
+     */
+    public function getRoleBadge(): array
+    {
+        $colors = [
+            UserRole::ADMIN->value => 'red',
+            UserRole::USER->value => 'blue',
+            // Add more roles and their colors here as needed
+        ];
+
+        $roleValue = $this->role->value;
+        $color = $colors[$roleValue] ?? 'zinc';
+
+        return [
+            'color' => $color,
+            'text' => ucfirst(strtolower($roleValue)),
+        ];
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>

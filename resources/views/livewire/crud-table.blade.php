@@ -99,22 +99,23 @@
                 <tr class="transition-colors">
                     @foreach($columns as $key => $label)
                         <td class="px-6 py-4 whitespace-nowrap text-zinc-700 dark:text-zinc-300">
-                            @if($key === 'role' && method_exists($this, 'getRoleBadge'))
-                                @php $badge = $this->getRoleBadge($resource->role); @endphp
-                                <flux:badge variant="pill"
-                                            color="{{ $badge['color'] }}">{{ $badge['text'] }}</flux:badge>
-                            @elseif(method_exists($this, 'getColumnDateType') && $resource->{$key} instanceof Carbon)
-                                @php $dateType = $this->getColumnDateType($key); @endphp
-                                @if($dateType === 'datetime')
-                                    <flux:text>{{ $resource->{$key}->format('n/j/Y g:i A') }}</flux:text>
-                                @elseif($dateType === 'date')
-                                    <flux:text>{{ $resource->{$key}->format('n/j/Y') }}</flux:text>
-                                @else
-                                    <flux:text>{{ $resource->{$key} }}</flux:text>
-                                @endif
-                            @else
-                                <flux:text>{{ $resource->{$key} }}</flux:text>
-                            @endif
+                            {{ $this->renderColumn($key, $resource) }}
+                            {{--                            @if($key === 'role' && method_exists($this, 'getRoleBadge'))--}}
+                            {{--                                @php $badge = $this->getRoleBadge($resource->role); @endphp--}}
+                            {{--                                <flux:badge variant="pill"--}}
+                            {{--                                            color="{{ $badge['color'] }}">{{ $badge['text'] }}</flux:badge>--}}
+                            {{--                            @elseif(method_exists($this, 'getColumnDateType') && $resource->{$key} instanceof Carbon)--}}
+                            {{--                                @php $dateType = $this->getColumnDateType($key); @endphp--}}
+                            {{--                                @if($dateType === 'datetime')--}}
+                            {{--                                    <flux:text>{{ $resource->{$key}->format('n/j/Y g:i A') }}</flux:text>--}}
+                            {{--                                @elseif($dateType === 'date')--}}
+                            {{--                                    <flux:text>{{ $resource->{$key}->format('n/j/Y') }}</flux:text>--}}
+                            {{--                                @else--}}
+                            {{--                                    <flux:text>{{ $resource->{$key} }}</flux:text>--}}
+                            {{--                                @endif--}}
+                            {{--                            @else--}}
+                            {{--                                <flux:text>{{ $resource->{$key} }}</flux:text>--}}
+                            {{--                            @endif--}}
                         </td>
                     @endforeach
                     <td class="px-6 py-4 text-right whitespace-nowrap">

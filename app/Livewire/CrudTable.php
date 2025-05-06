@@ -262,6 +262,36 @@ class CrudTable extends Component
         return [];
     }
 
+    public function getResourceCountSummary(): string
+    {
+        return sprintf(
+            'Total %s: %d',
+            $this->getFormattedResourceName(true),
+            $this->resources->count()
+        );
+    }
+
+    public function renderColumn($key, $resource)
+    {
+        // TODO: figure out what is not working about this custom rendering implementation
+        //        if ($customColumn = $this->renderCustomColumn($key, $resource) !== null) {
+        //            return $customColumn;
+        //        }
+
+        // Handle date formatting
+        if (method_exists($this, 'getColumnDateType') && $resource->{$key} instanceof Carbon) {
+            $dateType = $this->getColumnDateType($key);
+            if ($dateType === 'datetime') {
+                return $resource->{$key}->format('n/j/Y g:i A');
+            } elseif ($dateType === 'date') {
+                return $resource->{$key}->format('n/j/Y');
+            }
+        }
+
+        // Default rendering - just return the value
+        return $resource->{$key};
+    }
+
     /**
      * Check if a column is a date or datetime type based on casting
      *
@@ -313,12 +343,9 @@ class CrudTable extends Component
         return null;
     }
 
-    public function getResourceCountSummary(): string
+    public function renderCustomColumn($key, $resource): ?string
     {
-        return sprintf(
-            'Total %s: %d',
-            $this->getFormattedResourceName(true),
-            $this->resources->count()
-        );
+        // Should be overridden by child class
+        return null;
     }
 }
