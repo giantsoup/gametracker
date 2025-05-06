@@ -2,60 +2,99 @@
 
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules\Password;
 use function Livewire\Volt\{state, rules, mount, computed, protect};
 
-// Define state properties
+// Define state properties with locked roles
 state([
     'name' => '',
     'nickname' => '',
     'email' => '',
     'password' => '',
     'role' => 'user',
-    'roles' => [], // Move roles to the state instead of public property
-])->locked('roles'); // Lock roles since they should not be modified by the client
-
-// Set validation rules using best practices
-rules([
-    'name' => ['required', 'string', 'max:255'],
-    'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-    'password' => ['nullable', Password::defaults()],
-    'role' => ['required', 'string'],
-])->messages([
-    'email.unique' => 'This email address is already in use.',
-])->attributes([
-    'role' => 'user role',
+    'roles' => [],
+    'parentId' => null,
+    'debug' => [], // Add a debug state property to store debug information
+    'validationRules' => [] // Add state for dynamic validation rules
 ]);
 
-// Mount the component and initialize roles
+// Mount component with initial data and set up initial validation rules
 mount(function ($roles = [], $parentId = null) {
-    // If roles were passed to the component, use them
     if (!empty($roles)) {
         $this->roles = $roles;
     }
     if (!empty($parentId)) {
         $this->parentId = $parentId;
     }
+
+    // Set initial validation rules based on role
+    $this->updateValidationRules();
 });
 
-// Computed property for showing a password info message
-$showPasswordInfo = computed(function () {
-    return empty($this->password);
+// Method to update validation rules based on role
+$updateValidationRules = function() {
+    $baseRules = [
+        'name' => ['required', 'string', 'max:255'],
+        'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+        'role' => ['required', 'string'],
+    ];
+
+    // Set password rules based on role
+    if ($this->role === 'admin') {
+        $baseRules['password'] = ['required', 'string', 'min:8'];
+    } else {
+        $baseRules['password'] = ['nullable', 'string', 'min:8'];
+    }
+
+    $this->validationRules = $baseRules;
+};
+
+// Set base validation rules
+rules([
+    'name' => ['required', 'string', 'max:255'],
+    'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+    'password' => ['nullable', 'string', 'min:8'],
+    'role' => ['required', 'string'],
+])->messages([
+    'email.unique' => 'This email address is already in use.',
+    'password.required' => 'Password is required for admin users.',
+])->attributes([
+    'role' => 'user role',
+]);
+
+// Computed property for showing password field
+$showPasswordField = computed(function () {
+    return $this->role === 'admin';
 });
 
-// Create user action with proper error handling
+// Debug function to log role changes
+$roleChanged = function() {
+    // Update validation rules when role changes
+    $this->updateValidationRules();
+
+    // Update debug information
+    $this->debug = [
+        'role' => $this->role,
+        'showPasswordField' => $this->showPasswordField,
+        'timestamp' => now()->format('H:i:s.u')
+    ];
+
+    // Optionally, you can also log to browser console
+    $this->dispatch('console-log', ['role' => $this->role, 'showPasswordField' => $this->showPasswordField]);
+};
+
+// Create user action with manual validation
 $create = function () {
-    $this->validate();
+    // Validate using the dynamic rules
+    $this->validate($this->validationRules);
 
     try {
-        // Create user with secure password (generate if empty)
         User::create([
             'name' => $this->name,
             'nickname' => $this->nickname,
             'email' => $this->email,
             'password' => $this->password
                 ? Hash::make($this->password)
-                : Hash::make(bin2hex(random_bytes(16))),
+                : Hash::make($this->generateSecurePassword()),
             'role' => $this->role,
         ]);
 
@@ -66,13 +105,14 @@ $create = function () {
         session()->flash('success', 'User created successfully');
 
         // Dispatch event for parent components
-        $this->dispatch('user-created')->to($this->parentId);
-    } catch (Exception $e) {
+        if ($this->parentId) {
+            $this->dispatch('user-created')->to($this->parentId);
+        }
+    } catch (\Exception $e) {
         session()->flash('error', 'Failed to create user: '.$e->getMessage());
     }
 };
 
-// Then the protected helper can be correctly defined
 // Protected helper for generating secure passwords
 $generateSecurePassword = protect(function () {
     return bin2hex(random_bytes(16));
@@ -82,6 +122,17 @@ $generateSecurePassword = protect(function () {
 
 <section class="w-full">
     <form wire:submit="create" class="w-full space-y-6">
+        <!-- Debug information display -->
+        @if(!empty($debug))
+            <div class="p-4 mb-4 bg-gray-100 dark:bg-gray-800 rounded-md overflow-auto">
+                <h3 class="text-sm font-bold mb-2">Debug Info ({{ $debug['timestamp'] ?? 'N/A' }}):</h3>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div>Role: <span class="font-mono">{{ $debug['role'] ?? 'N/A' }}</span></div>
+                    <div>ShowPasswordField: <span class="font-mono">{{ $debug['showPasswordField'] ? 'true' : 'false' }}</span></div>
+                </div>
+            </div>
+        @endif
+
         <flux:input
             wire:model="name"
             :label="__('Name')"
@@ -107,17 +158,20 @@ $generateSecurePassword = protect(function () {
             autocomplete="email"
         />
 
+        @if($this->showPasswordField)
         <flux:input
             wire:model="password"
             :label="__('Password')"
             type="password"
             autocomplete="new-password"
-            :description="__('Leave blank to generate a secure random password')"
+            required
         />
+        @endif
 
         <div>
             <flux:select
-                wire:model="role"
+                wire:model.live="role"
+                {{-- wire:change="roleChanged" --}}
                 :label="__('Role')"
                 required
             >
@@ -131,7 +185,7 @@ $generateSecurePassword = protect(function () {
             </flux:text>
         </div>
 
-        @if($this->showPasswordInfo)
+        @if(!$this->showPasswordField)
             <div class="rounded-md bg-blue-50 p-4 dark:bg-blue-900/20">
                 <div class="flex">
                     <div class="flex-shrink-0">
@@ -183,3 +237,12 @@ $generateSecurePassword = protect(function () {
         </div>
     </form>
 </section>
+
+<!-- Optional: JavaScript to handle console logging -->
+<script>
+    document.addEventListener('livewire:initialized', () => {
+        @this.on('console-log', (data) => {
+            console.log('Debug info:', data);
+        });
+    });
+</script>
