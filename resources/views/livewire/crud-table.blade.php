@@ -42,6 +42,7 @@
         @endif
 
         <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+            @if($includeSearchFunctionality)
             <flux:input
                 wire:model.live.debounce.300ms="search"
                 type="search"
@@ -49,7 +50,9 @@
                 icon:trailing="magnifying-glass"
                 class="w-full sm:w-auto"
             />
+            @endif
 
+            @if($includePaginationFunctionality)
             <flux:select
                 wire:model.live="perPage"
                 class="w-full sm:w-auto"
@@ -59,6 +62,7 @@
                 <option value="50">50 per page</option>
                 <option value="100">100 per page</option>
             </flux:select>
+            @endif
         </div>
     </div>
 
@@ -159,7 +163,7 @@
         </table>
     </div>
 
-    @if($includePaginationFunctionality && method_exists($resources, 'hasPages') && $resources->hasPages())
+    @if($includePaginationFunctionality)
         <div class="mt-6">
             {{ $resources->links() }}
         </div>

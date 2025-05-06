@@ -12,6 +12,8 @@ use Livewire\Attributes\On;
 
 class UsersTable extends CrudTable
 {
+    public bool $includePaginationFunctionality = false;
+
     public string $modelName = User::class;
 
     public string $modelRouteBase = 'admin.users';

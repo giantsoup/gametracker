@@ -27,6 +27,8 @@ class CrudTable extends Component
 
     public bool $includePaginationFunctionality = true;
 
+    public bool $includeSearchFunctionality = true;
+
     public string $search = '';
 
     public string $sortField = 'created_at';
