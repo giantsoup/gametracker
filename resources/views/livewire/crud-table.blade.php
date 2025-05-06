@@ -43,25 +43,25 @@
 
         <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
             @if($includeSearchFunctionality)
-            <flux:input
-                wire:model.live.debounce.300ms="search"
-                type="search"
-                placeholder="Search..."
-                icon:trailing="magnifying-glass"
-                class="w-full sm:w-auto"
-            />
+                <flux:input
+                    wire:model.live.debounce.300ms="search"
+                    type="search"
+                    placeholder="Search..."
+                    icon:trailing="magnifying-glass"
+                    class="w-full sm:w-auto"
+                />
             @endif
 
             @if($includePaginationFunctionality)
-            <flux:select
-                wire:model.live="perPage"
-                class="w-full sm:w-auto"
-            >
-                <option value="10">10 per page</option>
-                <option value="25">25 per page</option>
-                <option value="50">50 per page</option>
-                <option value="100">100 per page</option>
-            </flux:select>
+                <flux:select
+                    wire:model.live="perPage"
+                    class="w-full sm:w-auto"
+                >
+                    <option value="10">10 per page</option>
+                    <option value="25">25 per page</option>
+                    <option value="50">50 per page</option>
+                    <option value="100">100 per page</option>
+                </flux:select>
             @endif
         </div>
     </div>
@@ -98,25 +98,25 @@
             @forelse($this->resources as $resource)
                 <tr class="transition-colors">
                     @foreach($columns as $key => $label)
-    <td class="px-6 py-4 whitespace-nowrap text-zinc-700 dark:text-zinc-300">
-        @if($key === 'role' && method_exists($this, 'getRoleBadge'))
-            @php $badge = $this->getRoleBadge($resource->role); @endphp
-            <flux:badge variant="pill"
-                        color="{{ $badge['color'] }}">{{ $badge['text'] }}</flux:badge>
-        @elseif(method_exists($this, 'getColumnDateType') && $resource->{$key} instanceof Carbon)
-            @php $dateType = $this->getColumnDateType($key); @endphp
-            @if($dateType === 'datetime')
-                <flux:text>{{ $resource->{$key}->format('n/j/Y g:i A') }}</flux:text>
-            @elseif($dateType === 'date')
-                <flux:text>{{ $resource->{$key}->format('n/j/Y') }}</flux:text>
-            @else
-                <flux:text>{{ $resource->{$key} }}</flux:text>
-            @endif
-        @else
-            <flux:text>{{ $resource->{$key} }}</flux:text>
-        @endif
-    </td>
-@endforeach
+                        <td class="px-6 py-4 whitespace-nowrap text-zinc-700 dark:text-zinc-300">
+                            @if($key === 'role' && method_exists($this, 'getRoleBadge'))
+                                @php $badge = $this->getRoleBadge($resource->role); @endphp
+                                <flux:badge variant="pill"
+                                            color="{{ $badge['color'] }}">{{ $badge['text'] }}</flux:badge>
+                            @elseif(method_exists($this, 'getColumnDateType') && $resource->{$key} instanceof Carbon)
+                                @php $dateType = $this->getColumnDateType($key); @endphp
+                                @if($dateType === 'datetime')
+                                    <flux:text>{{ $resource->{$key}->format('n/j/Y g:i A') }}</flux:text>
+                                @elseif($dateType === 'date')
+                                    <flux:text>{{ $resource->{$key}->format('n/j/Y') }}</flux:text>
+                                @else
+                                    <flux:text>{{ $resource->{$key} }}</flux:text>
+                                @endif
+                            @else
+                                <flux:text>{{ $resource->{$key} }}</flux:text>
+                            @endif
+                        </td>
+                    @endforeach
                     <td class="px-6 py-4 text-right whitespace-nowrap">
                         <div class="flex justify-end gap-2">
                             @if($includeShowFunctionality && $hasShow)
@@ -133,7 +133,7 @@
                             @if($includeEditFunctionality && $hasEdit && $this->hasEditPermission($resource))
                                 <flux:button
                                     wire:click="deleteModel({{ $resource->id }})"
-                                    wire:confirm="Are you sure you want to delete this {{ $this->getSingularResourceName() }}?"
+                                    wire:confirm="Are you sure you want to delete this {{ $this->getFormattedResourceName() }}?"
                                     variant="ghost"
                                     size="xs"
                                     icon:trailing="trash"

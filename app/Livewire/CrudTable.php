@@ -180,21 +180,47 @@ class CrudTable extends Component
         return true;
     }
 
-    /**
-     * Delete a model instance.
-     * Default implementation that works with any model.
-     * Can be overridden for custom delete logic.
-     */
-    public function deleteModel(Model $model): void
+    public function deleteModel(int $id): void
     {
+        $model = $this->modelName::find($id);
+
+        if (! $model) {
+            $this->dispatch('error', "{$this->getFormattedResourceName()} not found");
+
+            return;
+        }
+
         if (! $this->hasDeletePermission($model)) {
-            $this->dispatch('error', 'You do not have permission to delete this '.class_basename($model));
+            $this->dispatch('error', "You do not have permission to delete this {$this->getFormattedResourceName()}");
 
             return;
         }
 
         $model->delete();
-        $this->dispatch('success', class_basename($model).' deleted successfully');
+        $this->dispatch('success', "{$this->getFormattedResourceName()} deleted successfully");
+        $this->resetPage();
+    }
+
+    /**
+     * Get a formatted singular resource name for display in buttons and labels
+     *
+     * @param  bool  $plural  Whether to return the plural version of the resource name
+     */
+    public function getFormattedResourceName(bool $plural = false): string
+    {
+        $routeName = $this->getResourceName();
+        $name = Str::replace('-', ' ', Str::afterLast($routeName, '.'));
+
+        if ($plural) {
+            return Str::title(Str::plural($name));
+        }
+
+        return Str::title(Str::singular($name));
+    }
+
+    public function getResourceName(): string
+    {
+        return $this->modelRouteBase;
     }
 
     public function hasDeletePermission(Model $model): bool
@@ -231,23 +257,9 @@ class CrudTable extends Component
         return true;
     }
 
-    public function getResourceName(): string
-    {
-        return $this->modelRouteBase;
-    }
-
     public function getFormConfig(): array
     {
         return [];
-    }
-
-    /**
-     * Get the singular form of the resource name
-     * This can be overridden by child classes to implement custom resource naming
-     */
-    public function getSingularResourceName(): string
-    {
-        return Str::singular(Str::afterLast($this->getResourceName(), '.'));
     }
 
     /**
@@ -308,22 +320,5 @@ class CrudTable extends Component
             $this->getFormattedResourceName(true),
             $this->resources->count()
         );
-    }
-
-    /**
-     * Get a formatted singular resource name for display in buttons and labels
-     *
-     * @param  bool  $plural  Whether to return the plural version of the resource name
-     */
-    public function getFormattedResourceName(bool $plural = false): string
-    {
-        $routeName = $this->getResourceName();
-        $name = Str::replace('-', ' ', Str::afterLast($routeName, '.'));
-
-        if ($plural) {
-            return Str::title(Str::plural($name));
-        }
-
-        return Str::title(Str::singular($name));
     }
 }

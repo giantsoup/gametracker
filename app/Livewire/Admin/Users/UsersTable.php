@@ -119,10 +119,18 @@ class UsersTable extends CrudTable
         return auth()->user()->role === UserRole::ADMIN;
     }
 
-    public function deleteModel(Model $model): void
+    public function deleteModel(int $id): void
     {
+        $model = $this->modelName::find($id);
+
+        if (! $model) {
+            $this->dispatch('error', "{$this->getFormattedResourceName()} not found");
+
+            return;
+        }
+
         if (! $this->hasDeletePermission($model)) {
-            $this->dispatch('error', 'You do not have permission to delete this '.class_basename($model));
+            $this->dispatch('error', "You do not have permission to delete this {$this->getFormattedResourceName()}");
 
             return;
         }
@@ -134,7 +142,8 @@ class UsersTable extends CrudTable
         }
 
         $model->delete();
-        $this->dispatch('success', class_basename($model).' deleted successfully');
+        $this->dispatch('success', "{$this->getFormattedResourceName()} deleted successfully");
+        $this->resetPage();
     }
 
     /**
