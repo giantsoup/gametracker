@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -239,21 +240,88 @@ class CrudTable extends Component
     }
 
     /**
-     * Get a formatted singular resource name for display in buttons and labels
-     */
-    public function getFormattedResourceName(): string
-    {
-        $routeName = $this->getResourceName();
-
-        return Str::singular(Str::title(Str::replace('-', ' ', Str::afterLast($routeName, '.'))));
-    }
-
-    /**
      * Get the singular form of the resource name
      * This can be overridden by child classes to implement custom resource naming
      */
     public function getSingularResourceName(): string
     {
         return Str::singular(Str::afterLast($this->getResourceName(), '.'));
+    }
+
+    /**
+     * Check if a column is a date or datetime type based on casting
+     *
+     * @param  string  $column  Column name
+     * @return string|null Returns 'date', 'datetime', or null if not a date type
+     */
+    public function getColumnDateType(string $column): ?string
+    {
+        if (! $this->modelInstance) {
+            return null;
+        }
+
+        // Check if the model has cast definitions for this column
+        $casts = $this->modelInstance->getCasts();
+
+        if (isset($casts[$column])) {
+            $cast = $casts[$column];
+
+            // Check for date-related cast types
+            if ($cast === 'date') {
+                return 'date';
+            }
+
+            if (in_array($cast, ['datetime', 'timestamp', 'immutable_datetime', 'immutable_date', 'custom_datetime', 'timestamp'])) {
+                return 'datetime';
+            }
+
+            // Handle custom cast classes that might be date-related
+            if (class_exists($cast) && is_subclass_of($cast, CastsAttributes::class)) {
+                // If it's a custom cast class, we'll assume it's not a date for safety
+                return null;
+            }
+        }
+
+        // Check if the attribute is a date by examining the model's $dates array (legacy approach)
+        if (method_exists($this->modelInstance, 'getDates')) {
+            $dates = $this->modelInstance->getDates();
+            if (in_array($column, $dates)) {
+                return 'datetime';
+            }
+        }
+
+        // Last resort - check if this is a timestamp attribute
+        if ($column === $this->modelInstance->getCreatedAtColumn() ||
+            $column === $this->modelInstance->getUpdatedAtColumn()) {
+            return 'datetime';
+        }
+
+        return null;
+    }
+
+    public function getResourceCountSummary(): string
+    {
+        return sprintf(
+            'Total %s: %d',
+            $this->getFormattedResourceName(true),
+            $this->resources->count()
+        );
+    }
+
+    /**
+     * Get a formatted singular resource name for display in buttons and labels
+     *
+     * @param  bool  $plural  Whether to return the plural version of the resource name
+     */
+    public function getFormattedResourceName(bool $plural = false): string
+    {
+        $routeName = $this->getResourceName();
+        $name = Str::replace('-', ' ', Str::afterLast($routeName, '.'));
+
+        if ($plural) {
+            return Str::title(Str::plural($name));
+        }
+
+        return Str::title(Str::singular($name));
     }
 }

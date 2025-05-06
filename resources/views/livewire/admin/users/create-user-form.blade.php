@@ -13,7 +13,6 @@ state([
     'role' => 'user',
     'roles' => [],
     'parentId' => null,
-    'debug' => [], // Add a debug state property to store debug information
     'validationRules' => [] // Add state for dynamic validation rules
 ]);
 
@@ -26,11 +25,11 @@ mount(function ($roles = [], $parentId = null) {
         $this->parentId = $parentId;
     }
 
-    // Set initial validation rules based on role
+    // Set initial validation rules based on the role
     $this->updateValidationRules();
 });
 
-// Method to update validation rules based on role
+// Method to update validation rules based on the role
 $updateValidationRules = function() {
     $baseRules = [
         'name' => ['required', 'string', 'max:255'],
@@ -38,7 +37,7 @@ $updateValidationRules = function() {
         'role' => ['required', 'string'],
     ];
 
-    // Set password rules based on role
+    // Set password rules based on the role
     if ($this->role === 'admin') {
         $baseRules['password'] = ['required', 'string', 'min:8'];
     } else {
@@ -61,34 +60,18 @@ rules([
     'role' => 'user role',
 ]);
 
-// Computed property for showing password field
+// Computed property for showing the password field
 $showPasswordField = computed(function () {
     return $this->role === 'admin';
 });
 
-// Debug function to log role changes
-$roleChanged = function() {
-    // Update validation rules when role changes
-    $this->updateValidationRules();
-
-    // Update debug information
-    $this->debug = [
-        'role' => $this->role,
-        'showPasswordField' => $this->showPasswordField,
-        'timestamp' => now()->format('H:i:s.u')
-    ];
-
-    // Optionally, you can also log to browser console
-    $this->dispatch('console-log', ['role' => $this->role, 'showPasswordField' => $this->showPasswordField]);
-};
-
-// Create user action with manual validation
+// Create a user action with manual validation
 $create = function () {
     // Validate using the dynamic rules
     $this->validate($this->validationRules);
 
     try {
-        User::create([
+        $user = User::create([
             'name' => $this->name,
             'nickname' => $this->nickname,
             'email' => $this->email,
@@ -99,7 +82,13 @@ $create = function () {
         ]);
 
         // Reset form fields
-        $this->reset(['name', 'nickname', 'email', 'password', 'role']);
+        $this->reset(['name', 'nickname', 'email', 'password']);
+
+        // Instead of just resetting 'role', explicitly set it to 'user'
+        $this->role = 'user';
+
+        // Update validation rules after role is reset
+        $this->updateValidationRules();
 
         // Show a success message
         session()->flash('success', 'User created successfully');
@@ -108,7 +97,10 @@ $create = function () {
         if ($this->parentId) {
             $this->dispatch('user-created')->to($this->parentId);
         }
-    } catch (\Exception $e) {
+
+        // Dispatch a global event to refresh the UserTable component
+        $this->dispatch('user-created');
+    } catch (Exception $e) {
         session()->flash('error', 'Failed to create user: '.$e->getMessage());
     }
 };
@@ -122,16 +114,6 @@ $generateSecurePassword = protect(function () {
 
 <section class="w-full">
     <form wire:submit="create" class="w-full space-y-6">
-        <!-- Debug information display -->
-        @if(!empty($debug))
-            <div class="p-4 mb-4 bg-gray-100 dark:bg-gray-800 rounded-md overflow-auto">
-                <h3 class="text-sm font-bold mb-2">Debug Info ({{ $debug['timestamp'] ?? 'N/A' }}):</h3>
-                <div class="grid grid-cols-2 gap-2 text-xs">
-                    <div>Role: <span class="font-mono">{{ $debug['role'] ?? 'N/A' }}</span></div>
-                    <div>ShowPasswordField: <span class="font-mono">{{ $debug['showPasswordField'] ? 'true' : 'false' }}</span></div>
-                </div>
-            </div>
-        @endif
 
         <flux:input
             wire:model="name"
@@ -171,7 +153,6 @@ $generateSecurePassword = protect(function () {
         <div>
             <flux:select
                 wire:model.live="role"
-                {{-- wire:change="roleChanged" --}}
                 :label="__('Role')"
                 required
             >
@@ -193,7 +174,7 @@ $generateSecurePassword = protect(function () {
                     </div>
                     <div class="ml-3 flex-1">
                         <flux:text class="text-sm text-blue-400 dark:text-blue-300">
-                            {{ __('A secure random password will be generated for this user. They can use passwordless login or reset their password.') }}
+                            {{ __('A secure random password will be generated for this user. They can use Passwordless Login.') }}
                         </flux:text>
                     </div>
                 </div>
@@ -207,7 +188,7 @@ $generateSecurePassword = protect(function () {
                     wire:navigate
                     variant="outline"
                 >
-                    {{ __('Cancel') }}
+                    {{ __('Close') }}
                 </flux:button>
 
                 <flux:button
@@ -237,12 +218,3 @@ $generateSecurePassword = protect(function () {
         </div>
     </form>
 </section>
-
-<!-- Optional: JavaScript to handle console logging -->
-<script>
-    document.addEventListener('livewire:initialized', () => {
-        @this.on('console-log', (data) => {
-            console.log('Debug info:', data);
-        });
-    });
-</script>

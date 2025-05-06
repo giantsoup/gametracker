@@ -1,17 +1,16 @@
+@php use Carbon\Carbon; @endphp
 <div class="w-full">
     @if($includeCreateFunctionality && $canCreate && method_exists($this, 'toggleCreateForm'))
-        <div class="pb-6">
-            <div class="overflow-hidden transition-all duration-300 ease-in-out"
-                 style="{{ $this->showCreateForm ? 'max-height: auto;' : 'max-height: 0;' }}">
-                @if($this->showCreateForm)
-                    <div
-                        class="bg-white dark:bg-zinc-800 rounded-lg shadow-lg border border-zinc-200 dark:border-zinc-700 p-4 mb-4">
-                        @if(method_exists($this, 'getCreateFormComponent') && $component = $this->getCreateFormComponent())
-                            @livewire($formData['component'], $formData['componentData'] ?? [])
-                        @endif
-                    </div>
-                @endif
-            </div>
+        <div class="overflow-hidden transition-all duration-300 ease-in-out"
+             style="{{ $this->showCreateForm ? 'max-height: auto;' : 'max-height: 0;' }}">
+            @if($this->showCreateForm)
+                <div
+                    class="bg-white dark:bg-zinc-800 rounded-lg shadow-lg border border-zinc-200 dark:border-zinc-700 p-4 mb-4">
+                    @if(method_exists($this, 'getCreateFormComponent') && $component = $this->getCreateFormComponent())
+                        @livewire($formData['component'], $formData['componentData'] ?? [])
+                    @endif
+                </div>
+            @endif
         </div>
     @endif
 
@@ -19,14 +18,16 @@
         @if($includeCreateFunctionality && $canCreate)
             @if(method_exists($this, 'toggleCreateForm'))
                 <div>
-                    <flux:button
-                        wire:click="toggleCreateForm"
-                        variant="primary"
-                        size="base"
-                        class="whitespace-nowrap {{ $this->showCreateForm ? 'hidden' : '' }}"
-                    >
-                        Add {{ $this->getFormattedResourceName() }}
-                    </flux:button>
+                    @if(!$this->showCreateForm)
+                        <flux:button
+                            wire:click="toggleCreateForm"
+                            variant="primary"
+                            size="base"
+                            class="whitespace-nowrap"
+                        >
+                            Create {{ $this->getFormattedResourceName() }}
+                        </flux:button>
+                    @endif
                 </div>
             @else
                 <flux:button
@@ -93,16 +94,25 @@
             @forelse($this->resources as $resource)
                 <tr class="transition-colors">
                     @foreach($columns as $key => $label)
-                        <td class="px-6 py-4 whitespace-nowrap text-zinc-700 dark:text-zinc-300">
-                            @if($key === 'role' && method_exists($this, 'getRoleBadge'))
-                                @php $badge = $this->getRoleBadge($resource->role); @endphp
-                                <flux:badge variant="pill"
-                                            color="{{ $badge['color'] }}">{{ $badge['text'] }}</flux:badge>
-                            @else
-                                <flux:text>{{ $resource->{$key} }}</flux:text>
-                            @endif
-                        </td>
-                    @endforeach
+    <td class="px-6 py-4 whitespace-nowrap text-zinc-700 dark:text-zinc-300">
+        @if($key === 'role' && method_exists($this, 'getRoleBadge'))
+            @php $badge = $this->getRoleBadge($resource->role); @endphp
+            <flux:badge variant="pill"
+                        color="{{ $badge['color'] }}">{{ $badge['text'] }}</flux:badge>
+        @elseif(method_exists($this, 'getColumnDateType') && $resource->{$key} instanceof Carbon)
+            @php $dateType = $this->getColumnDateType($key); @endphp
+            @if($dateType === 'datetime')
+                <flux:text>{{ $resource->{$key}->format('n/j/Y g:i A') }}</flux:text>
+            @elseif($dateType === 'date')
+                <flux:text>{{ $resource->{$key}->format('n/j/Y') }}</flux:text>
+            @else
+                <flux:text>{{ $resource->{$key} }}</flux:text>
+            @endif
+        @else
+            <flux:text>{{ $resource->{$key} }}</flux:text>
+        @endif
+    </td>
+@endforeach
                     <td class="px-6 py-4 text-right whitespace-nowrap">
                         <div class="flex justify-end gap-2">
                             @if($includeShowFunctionality && $hasShow)
@@ -154,4 +164,8 @@
             {{ $resources->links() }}
         </div>
     @endif
+
+    <div class="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+        {{ $this->getResourceCountSummary() }}
+    </div>
 </div>
