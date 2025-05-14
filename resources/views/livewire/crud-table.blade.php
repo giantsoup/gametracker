@@ -154,7 +154,7 @@
                     <td colspan="{{ count($columns) + ($includeShowFunctionality || $includeEditFunctionality || $includeDeleteFunctionality ? 1 : 0) }}"
                         class="px-6 py-8 text-center">
                         <div class="flex flex-col items-center justify-center">
-                            <flux:icon icon="document-search" variant="mini"
+                            <flux:icon icon="magnifying-glass" variant="mini"
                                        class="h-12 w-12 mb-4 text-zinc-400 dark:text-zinc-600"/>
                             <flux:text class="text-zinc-500 dark:text-zinc-400">
                                 No records found.

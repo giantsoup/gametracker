@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
@@ -21,7 +22,6 @@ Route::middleware(['auth'])->group(function () {
     Volt::route('settings/appearance', 'settings.appearance')->name('settings.appearance');
 
     Route::middleware(['admin'])->group(function () {
-        Route::get('admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
         Route::get('admin/settings', [AdminController::class, 'settings'])->name('admin.settings');
         Route::get('admin/analytics', [AdminController::class, 'analytics'])->name('admin.analytics');
         Route::get('admin/notifications', [AdminController::class, 'notifications'])->name('admin.notifications');
@@ -29,6 +29,11 @@ Route::middleware(['auth'])->group(function () {
 
         // User Management Routes
         Route::resource('admin/users', UserController::class, [
+            'as' => 'admin',
+        ]);
+
+        // Event Management Routes
+        Route::resource('admin/events', EventController::class, [
             'as' => 'admin',
         ]);
     });

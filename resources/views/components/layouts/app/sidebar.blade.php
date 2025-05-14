@@ -20,15 +20,16 @@
 
     <flux:navlist variant="outline">
         <flux:navlist.group :heading="__('Administration')" class="grid">
-            <flux:navlist.item icon="key" :href="route('admin.dashboard')"
-                               :current="request()->routeIs('admin.dashboard')" wire:navigate>
-                {{ __('Admin Dashboard') }}
-            </flux:navlist.item>
-
             <flux:navlist.item icon="users" :href="route('admin.users.index')"
                                :current="request()->routeIs('admin.users.index') || request()->routeIs('admin.users.*')"
                                wire:navigate>
                 {{ __('Users') }}
+            </flux:navlist.item>
+
+            <flux:navlist.item icon="calendar" :href="route('admin.events.index')"
+                               :current="request()->routeIs('admin.events.index') || request()->routeIs('admin.events.*')"
+                               wire:navigate>
+                {{ __('Events') }}
             </flux:navlist.item>
 
             <flux:navlist.item icon="cog-6-tooth" :href="route('admin.settings')"

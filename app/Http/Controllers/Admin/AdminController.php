@@ -8,14 +8,6 @@ use Illuminate\View\View;
 class AdminController extends Controller
 {
     /**
-     * Show the admin dashboard.
-     */
-    public function dashboard(): View
-    {
-        return view('admin.dashboard');
-    }
-
-    /**
      * Show the system settings page.
      */
     public function settings(): View
