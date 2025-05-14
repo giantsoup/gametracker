@@ -5,14 +5,18 @@
                 User Details
             </h2>
             <div class="flex space-x-2">
-                <a href="{{ route('admin.users.edit', $user) }}"
-                   class="px-4 py-2 text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600/90 dark:hover:bg-indigo-500 rounded-md">
-                    Edit User
-                </a>
-                <a href="{{ route('admin.users.index') }}"
-                   class="px-4 py-2 text-gray-700 bg-gray-200 hover:bg-gray-300 dark:bg-zinc-700 dark:hover:bg-zinc-600 dark:text-zinc-200 rounded-md">
-                    Back to Users
-                </a>
+                <flux:button
+                    href="{{ route('admin.users.edit', $user) }}"
+                    variant="primary"
+                >
+                    {{ __('Edit User') }}
+                </flux:button>
+                <flux:button
+                    href="{{ route('admin.users.index') }}"
+                    variant="outline"
+                >
+                    {{ __('Back to Users') }}
+                </flux:button>
             </div>
         </div>
     </x-slot:header>
@@ -71,25 +75,30 @@
                             <div>
                                 <h3 class="text-lg font-medium text-gray-900 dark:text-zinc-200">Actions</h3>
                                 <div class="mt-2 p-4 bg-gray-50 dark:bg-zinc-900 rounded-lg space-y-4">
-                                    <a href="{{ route('admin.users.edit', $user) }}"
-                                       class="block w-full px-4 py-2 text-center text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600/90 dark:hover:bg-indigo-500 rounded-md">
-                                        Edit User
-                                    </a>
+                                    <flux:button
+                                        href="{{ route('admin.users.edit', $user) }}"
+                                        variant="primary"
+                                        class="w-full justify-center"
+                                    >
+                                        {{ __('Edit User') }}
+                                    </flux:button>
 
                                     @if (auth()->id() !== $user->id)
                                         <form method="POST" action="{{ route('admin.users.destroy', $user) }}"
                                               onsubmit="return confirm('Are you sure you want to delete this user?');">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit"
-                                                    class="block w-full px-4 py-2 text-center text-white bg-red-600 hover:bg-red-700 dark:bg-red-600/90 dark:hover:bg-red-500 rounded-md">
-                                                Delete User
-                                            </button>
+                                            <flux:button
+                                                type="submit"
+                                                variant="danger"
+                                                class="w-full justify-center"
+                                            >
+                                                {{ __('Delete User') }}
+                                            </flux:button>
                                         </form>
                                     @else
-                                        <div
-                                            class="p-2 text-sm text-center text-gray-500 bg-gray-100 dark:bg-zinc-800 dark:text-zinc-400 rounded-md">
-                                            You cannot delete your own account
+                                        <div class="p-4 text-sm text-blue-700 bg-blue-100 dark:bg-blue-900/20 dark:text-blue-300 rounded-md text-center">
+                                            {{ __('You cannot delete your own account') }}
                                         </div>
                                     @endif
                                 </div>

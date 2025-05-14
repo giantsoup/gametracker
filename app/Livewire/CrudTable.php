@@ -6,6 +6,7 @@ use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
@@ -271,12 +272,37 @@ class CrudTable extends Component
         );
     }
 
+    /**
+     * Tracks whether the current column being rendered contains HTML that should not be escaped
+     *
+     * @var bool
+     */
+    public $columnContainsHtml = false;
+
+    /**
+     * Render a column value
+     *
+     * @param  string  $key  The column key
+     * @param  mixed  $resource  The resource being rendered
+     * @return mixed The rendered column content
+     */
     public function renderColumn($key, $resource)
     {
-        // TODO: figure out what is not working about this custom rendering implementation
-        //        if ($customColumn = $this->renderCustomColumn($key, $resource) !== null) {
-        //            return $customColumn;
-        //        }
+        // Reset the HTML flag for each column
+        $this->columnContainsHtml = false;
+
+        // Custom column rendering implementation
+        $customColumn = $this->renderCustomColumn($key, $resource);
+        if ($customColumn !== null) {
+            // If it's a View instance, mark it as containing HTML
+            if ($customColumn instanceof ViewInstance) {
+                $this->columnContainsHtml = true;
+
+                return $customColumn;
+            }
+
+            return $customColumn;
+        }
 
         // Handle date formatting
         if (method_exists($this, 'getColumnDateType') && $resource->{$key} instanceof Carbon) {
@@ -290,6 +316,19 @@ class CrudTable extends Component
 
         // Default rendering - just return the value
         return $resource->{$key};
+    }
+
+    /**
+     * Render a custom column. This can be overridden by child classes.
+     *
+     * @param  string  $key  The column key
+     * @param  mixed  $resource  The resource being rendered
+     * @return string|null|Illuminate\Contracts\View\View The rendered column content
+     */
+    public function renderCustomColumn($key, $resource)
+    {
+        // Should be overridden by child class
+        return null;
     }
 
     /**
@@ -340,12 +379,6 @@ class CrudTable extends Component
             return 'datetime';
         }
 
-        return null;
-    }
-
-    public function renderCustomColumn($key, $resource): ?string
-    {
-        // Should be overridden by child class
         return null;
     }
 }

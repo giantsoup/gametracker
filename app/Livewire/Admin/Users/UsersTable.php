@@ -7,6 +7,7 @@ use App\Livewire\CrudTable;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\View\ComponentAttributeBag;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 
@@ -145,15 +146,23 @@ class UsersTable extends CrudTable
         $this->resetPage();
     }
 
-    public function renderCustomColumn($key, $resource): ?string
+    /**
+     * Render a custom column
+     *
+     * @param  string  $key  The column key
+     * @param  mixed  $resource  The resource being rendered
+     * @return mixed The rendered column content
+     */
+    public function renderCustomColumn($key, $resource)
     {
-        if ($key === 'role' && method_exists($this, 'getRoleBadge')) {
+        if ($key === 'role') {
             $badge = $resource->getRoleBadge();
 
             return view('flux.badge.index', [
                 'variant' => 'pill',
                 'color' => $badge['color'],
-                'text' => $badge['text'],
+                'slot' => $badge['text'],
+                'attributes' => new ComponentAttributeBag,
             ]);
         }
 

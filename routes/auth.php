@@ -9,6 +9,9 @@ Route::middleware('guest')->group(function () {
     Volt::route('login', 'auth.login')
         ->name('login');
 
+    Volt::route('register', 'auth.register')
+        ->name('register');
+
     Volt::route('forgot-password', 'auth.forgot-password')
         ->name('password.request');
 
@@ -32,10 +35,7 @@ Route::middleware('auth')->group(function () {
 Route::post('logout', App\Livewire\Actions\Logout::class)
     ->name('logout');
 
-// Add these routes to your existing guest middleware group
 Route::middleware('guest')->group(function () {
-    // Keep your existing routes
-
     // Add new passwordless routes
     Route::get('passwordless-login', [PasswordlessLoginController::class, 'showLoginForm'])
         ->name('passwordless.login');
@@ -44,7 +44,6 @@ Route::middleware('guest')->group(function () {
         ->name('passwordless.send');
 });
 
-// Add this route outside any middleware group
 Route::get('verify-login/{email}/{token}', [PasswordlessLoginController::class, 'verifyLogin'])
     ->middleware('signed')
     ->name('verification.passwordless');

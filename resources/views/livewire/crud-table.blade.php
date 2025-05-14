@@ -99,23 +99,15 @@
                 <tr class="transition-colors">
                     @foreach($columns as $key => $label)
                         <td class="px-6 py-4 whitespace-nowrap text-zinc-700 dark:text-zinc-300">
-                            {{ $this->renderColumn($key, $resource) }}
-                            {{--                            @if($key === 'role' && method_exists($this, 'getRoleBadge'))--}}
-                            {{--                                @php $badge = $this->getRoleBadge($resource->role); @endphp--}}
-                            {{--                                <flux:badge variant="pill"--}}
-                            {{--                                            color="{{ $badge['color'] }}">{{ $badge['text'] }}</flux:badge>--}}
-                            {{--                            @elseif(method_exists($this, 'getColumnDateType') && $resource->{$key} instanceof Carbon)--}}
-                            {{--                                @php $dateType = $this->getColumnDateType($key); @endphp--}}
-                            {{--                                @if($dateType === 'datetime')--}}
-                            {{--                                    <flux:text>{{ $resource->{$key}->format('n/j/Y g:i A') }}</flux:text>--}}
-                            {{--                                @elseif($dateType === 'date')--}}
-                            {{--                                    <flux:text>{{ $resource->{$key}->format('n/j/Y') }}</flux:text>--}}
-                            {{--                                @else--}}
-                            {{--                                    <flux:text>{{ $resource->{$key} }}</flux:text>--}}
-                            {{--                                @endif--}}
-                            {{--                            @else--}}
-                            {{--                                <flux:text>{{ $resource->{$key} }}</flux:text>--}}
-                            {{--                            @endif--}}
+                            @php
+                                $columnContent = $this->renderColumn($key, $resource);
+                            @endphp
+
+                            @if($this->columnContainsHtml)
+                                {!! $columnContent !!}
+                            @else
+                                {{ $columnContent }}
+                            @endif
                         </td>
                     @endforeach
                     <td class="px-6 py-4 text-right whitespace-nowrap">
@@ -132,6 +124,17 @@
                             @endif
 
                             @if($includeEditFunctionality && $hasEdit && $this->hasEditPermission($resource))
+                                <flux:button
+                                    href="{{ route($this->getResourceName() . '.edit', $resource) }}"
+                                    variant="ghost"
+                                    size="xs"
+                                    icon:trailing="pencil-square"
+                                >
+                                    Edit
+                                </flux:button>
+                            @endif
+
+                            @if($includeDeleteFunctionality && $hasDestroy && $this->hasDeletePermission($resource))
                                 <flux:button
                                     wire:click="deleteModel({{ $resource->id }})"
                                     wire:confirm="Are you sure you want to delete this {{ $this->getFormattedResourceName() }}?"

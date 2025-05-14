@@ -24,7 +24,7 @@ new #[Layout('components.layouts.auth')] class extends Component {
     public bool $remember = false;
 
     // For passwordless login toggle
-    public bool $usePasswordless = true;
+    public bool $usePasswordless = false;
 
     // Status message for passwordless login
     public string $passwordlessStatus = '';
