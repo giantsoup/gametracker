@@ -15,7 +15,9 @@ class EventController extends Controller
     {
         $this->authorize('viewAny', Event::class);
 
-        return EventResource::collection(Event::all());
+        $events = Event::all();
+
+        return view('events.index', compact('events'));
     }
 
     public function store(EventRequest $request)
@@ -29,7 +31,7 @@ class EventController extends Controller
     {
         $this->authorize('view', $event);
 
-        return new EventResource($event);
+        return view('events.show', compact('event'));
     }
 
     public function update(EventRequest $request, Event $event)

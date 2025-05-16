@@ -21,6 +21,10 @@ Route::middleware(['auth'])->group(function () {
     Volt::route('settings/password', 'settings.password')->name('settings.password');
     Volt::route('settings/appearance', 'settings.appearance')->name('settings.appearance');
 
+    // Event Routes
+    Route::get('events', [App\Http\Controllers\EventController::class, 'index'])->name('events.index');
+    Route::get('events/{event}', [App\Http\Controllers\EventController::class, 'show'])->name('events.show');
+
     Route::middleware(['admin'])->group(function () {
         Route::get('admin/settings', [AdminController::class, 'settings'])->name('admin.settings');
         Route::get('admin/analytics', [AdminController::class, 'analytics'])->name('admin.analytics');
