@@ -70,6 +70,13 @@
                     <livewire:events.create-player-form :event="$event" />
                 </div>
             </div>
+
+            <div class="mt-8 overflow-hidden bg-white dark:bg-zinc-800 shadow-sm sm:rounded-lg border border-zinc-200 dark:border-zinc-700">
+                <div class="p-6 bg-white dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700">
+                    <livewire:events.games-list :event="$event" />
+                    <livewire:events.create-game-form :event="$event" />
+                </div>
+            </div>
         </div>
     </div>
 </x-layouts.app>

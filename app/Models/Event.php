@@ -141,4 +141,12 @@ class Event extends Model
             ->withPivot(['nickname', 'joined_at', 'left_at'])
             ->withTimestamps();
     }
+
+    /**
+     * Get the games associated with the event.
+     */
+    public function games(): HasMany
+    {
+        return $this->hasMany(Game::class);
+    }
 }
