@@ -55,7 +55,9 @@
 </style>
 
 <div class="relative" data-component="dashboard" wire:id="dashboard">
-    <x-js-debug />
+    @if(app()->environment('local', 'development', 'testing'))
+        <x-js-debug />
+    @endif
     <!-- Options Menu - Sticky Header -->
     <div class="sticky top-0 z-50 bg-white dark:bg-gray-800 shadow-md">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -63,15 +65,6 @@
                 <!-- GameTracker Logo/Title -->
                 <div class="flex items-center">
                     <h1 class="text-xl font-bold text-gray-900 dark:text-white">GameTracker</h1>
-                    <span class="ml-4 text-sm text-gray-600 dark:text-gray-400">Test Counter: {{ $testCounter }}</span>
-                    <button
-                        wire:click.prevent="incrementTestCounter"
-                        wire:key="test-counter-button"
-                        class="ml-2 px-2 py-1 bg-blue-500 text-white rounded-md text-xs"
-                        id="test-counter-button"
-                    >
-                        Increment
-                    </button>
                 </div>
 
                 <!-- Options Menu -->

@@ -16,8 +16,6 @@ class Dashboard extends Component
 
     public $displayType = 'default'; // Can be 'projection', 'mobile', or 'default'
 
-    public $testCounter = 0; // Simple counter for testing
-
     public function mount(Request $request)
     {
         // Check if layout is specified in query parameters
@@ -72,13 +70,6 @@ class Dashboard extends Component
 
         skip_detection:
 
-        // Log the active layout and display type for debugging
-        \Log::info('Dashboard mounted', [
-            'activeLayout' => $this->activeLayout,
-            'displayType' => $this->displayType,
-            'layout_param' => $request->input('layout'),
-            'display_param' => $request->input('display'),
-        ]);
     }
 
     public function render()
@@ -134,12 +125,6 @@ class Dashboard extends Component
 
     public function switchLayout($layout)
     {
-        // Log the current layout and the new layout for debugging
-        \Log::info('Switching layout', [
-            'from' => $this->activeLayout,
-            'to' => $layout,
-        ]);
-
         $this->activeLayout = $layout;
     }
 
@@ -155,11 +140,5 @@ class Dashboard extends Component
                 $this->activeLayout = 1; // Focus layout is better for projection
             }
         }
-    }
-
-    public function incrementTestCounter()
-    {
-        $this->testCounter++;
-        \Log::info('Test counter incremented', ['counter' => $this->testCounter]);
     }
 }

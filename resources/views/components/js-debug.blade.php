@@ -1,3 +1,4 @@
+@if(app()->environment('local', 'development', 'testing'))
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         console.log('DOM fully loaded and parsed');
@@ -76,7 +77,14 @@
 
                     // Check if the click event is propagating
                     setTimeout(function() {
-                        console.log('Current test counter value:', document.querySelector('span:contains("Test Counter:")').textContent);
+                        // Using a more compatible selector approach
+                        const spans = document.querySelectorAll('span');
+                        for (const span of spans) {
+                            if (span.textContent.includes('Test Counter:')) {
+                                console.log('Current test counter value:', span.textContent);
+                                break;
+                            }
+                        }
                     }, 500);
                 });
             } else {
@@ -99,3 +107,4 @@
         }, 1000); // Wait for the DOM to be fully loaded
     });
 </script>
+@endif
