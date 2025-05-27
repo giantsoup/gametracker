@@ -5,7 +5,8 @@ use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
-Route::get('/', \App\Livewire\Dashboard::class)->name('home');
+Route::view('/', 'home')->name('home');
+Route::get('/button-test', \App\Livewire\ButtonTest::class)->name('button-test');
 
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
