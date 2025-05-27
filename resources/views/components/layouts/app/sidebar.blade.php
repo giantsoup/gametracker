@@ -34,40 +34,10 @@
                                wire:navigate>
                 {{ __('Events') }}
             </flux:navlist.item>
-
-            <flux:navlist.item icon="cog-6-tooth" :href="route('admin.settings')"
-                               :current="request()->routeIs('admin.settings')" wire:navigate>
-                {{ __('System Settings') }}
-            </flux:navlist.item>
-
-            <flux:navlist.item icon="chart-bar" :href="route('admin.analytics')"
-                               :current="request()->routeIs('admin.analytics')" wire:navigate>
-                {{ __('Analytics') }}
-            </flux:navlist.item>
-
-            <flux:navlist.item icon="bell-alert" :href="route('admin.notifications')"
-                               :current="request()->routeIs('admin.notifications')" wire:navigate>
-                {{ __('Notifications') }}
-            </flux:navlist.item>
-
-            <flux:navlist.item icon="document-text" :href="route('admin.logs')"
-                               :current="request()->routeIs('admin.logs')" wire:navigate>
-                {{ __('System Logs') }}
-            </flux:navlist.item>
         </flux:navlist.group>
     </flux:navlist>
 
     <flux:spacer/>
-
-    <flux:navlist variant="outline">
-        <flux:navlist.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit" target="_blank">
-            {{ __('Repository') }}
-        </flux:navlist.item>
-
-        <flux:navlist.item icon="book-open-text" href="https://laravel.com/docs/starter-kits" target="_blank">
-            {{ __('Documentation') }}
-        </flux:navlist.item>
-    </flux:navlist>
 
     <!-- Desktop User Menu -->
     <flux:dropdown position="bottom" align="start">
