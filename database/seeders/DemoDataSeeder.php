@@ -132,7 +132,7 @@ class DemoDataSeeder extends Seeder
             // Create or update games for each event
             $gameCount = rand(3, 6);
             for ($i = 1; $i <= $gameCount; $i++) {
-                Game::updateOrCreate(
+                $game = Game::updateOrCreate(
                     [
                         'name' => "Game $i for $event->name",
                         'event_id' => $event->id,
@@ -141,6 +141,13 @@ class DemoDataSeeder extends Seeder
                         'duration' => rand(30, 180), // 30 minutes to 3 hours
                     ]
                 );
+
+                // For active events, mark some games as upcoming by setting created_at to null
+                if ($event->active && $i > $gameCount / 2) {
+                    // Set created_at to null for the second half of games to mark them as upcoming
+                    $game->created_at = null;
+                    $game->save();
+                }
             }
 
             // Add players to each event

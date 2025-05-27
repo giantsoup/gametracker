@@ -96,7 +96,7 @@ class Player extends Model
     /**
      * Get the display name for the player.
      */
-    public function getDisplayName(): string
+    public function getDisplayNameAttribute(): string
     {
         return $this->nickname ?? $this->user->name;
     }
