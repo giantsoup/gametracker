@@ -1,14 +1,15 @@
 <?php
 
+use App\Models\Game;
 use App\Models\Event;
 use function Livewire\Volt\{state, rules, mount, computed, protect};
 
 // Define state properties
 state([
     'name' => '',
-    'active' => false,
-    'starts_at' => null,
-    'ends_at' => null,
+    'event_id' => null,
+    'duration' => 60,
+    'events' => [],
     'parentId' => null,
 ]);
 
@@ -17,45 +18,48 @@ mount(function ($parentId = null) {
     if (!empty($parentId)) {
         $this->parentId = $parentId;
     }
+
+    // Load all active events for the dropdown
+    $this->events = Event::where('active', true)->orderBy('name')->get();
 });
 
 // Set validation rules
 rules([
     'name' => ['required', 'string', 'max:255'],
-    'active' => ['boolean'],
-    'starts_at' => ['nullable', 'date'],
-    'ends_at' => ['nullable', 'date', 'after_or_equal:starts_at'],
+    'event_id' => ['required', 'exists:events,id'],
+    'duration' => ['required', 'integer', 'min:15'],
 ])->messages([
-    'ends_at.after_or_equal' => 'The end date must be after or equal to the start date.',
+    'event_id.required' => 'Please select an event.',
+    'event_id.exists' => 'The selected event does not exist.',
+    'duration.min' => 'Duration must be at least 15 minutes.',
 ]);
 
-// Create an event action
+// Create a game action
 $create = function () {
     $this->validate();
 
     try {
-        $event = Event::create([
+        $game = Game::create([
             'name' => $this->name,
-            'active' => $this->active,
-            'starts_at' => $this->starts_at,
-            'ends_at' => $this->ends_at,
+            'event_id' => $this->event_id,
+            'duration' => $this->duration,
         ]);
 
         // Reset form fields
-        $this->reset(['name', 'active', 'starts_at', 'ends_at']);
+        $this->reset(['name', 'duration']);
 
         // Show a success message
-        session()->flash('success', 'Event created successfully');
+        session()->flash('success', 'Game created successfully');
 
         // Dispatch event for parent components
         if ($this->parentId) {
-            $this->dispatch('event-created')->to($this->parentId);
+            $this->dispatch('game-created')->to($this->parentId);
         }
 
-        // Dispatch a global event to refresh the EventsTable component
-        $this->dispatch('event-created');
+        // Dispatch a global event to refresh the GamesTable component
+        $this->dispatch('game-created');
     } catch (Exception $e) {
-        session()->flash('error', 'Failed to create event: '.$e->getMessage());
+        session()->flash('error', 'Failed to create game: '.$e->getMessage());
     }
 };
 
@@ -73,30 +77,31 @@ $create = function () {
             autocomplete="name"
         />
 
-        <flux:checkbox
-            wire:model="active"
-            :label="__('Active')"
-        />
+        <flux:select
+            wire:model="event_id"
+            :label="__('Event')"
+            required
+        >
+            <option value="">{{ __('Select an event') }}</option>
+            @foreach($events as $event)
+                <option value="{{ $event->id }}">{{ $event->name }}</option>
+            @endforeach
+        </flux:select>
 
         <flux:input
-            wire:model="starts_at"
-            :label="__('Start Date')"
-            type="datetime-local"
-            autocomplete="off"
-        />
-
-        <flux:input
-            wire:model="ends_at"
-            :label="__('End Date')"
-            type="datetime-local"
-            autocomplete="off"
-            :description="__('Must be after or equal to the start date')"
+            wire:model="duration"
+            :label="__('Duration (minutes)')"
+            type="number"
+            min="15"
+            step="15"
+            required
+            :description="__('Duration in minutes, must be in 15-minute intervals')"
         />
 
         <div class="flex items-center gap-4">
             <div class="flex items-center gap-3">
                 <flux:button
-                    href="{{ route('admin.events.index') }}"
+                    href="{{ route('games.index') }}"
                     wire:navigate
                     variant="outline"
                 >
@@ -108,7 +113,7 @@ $create = function () {
                     variant="primary"
                     wire:loading.attr="disabled"
                 >
-                    <span wire:loading.remove wire:target="create">{{ __('Create Event') }}</span>
+                    <span wire:loading.remove wire:target="create">{{ __('Create Game') }}</span>
                     <span wire:loading wire:target="create" class="flex items-center">
                         <flux:icon icon="arrow-path" class="mr-2 h-4 w-4 animate-spin"/>
                         {{ __('Creating...') }}

@@ -3,14 +3,19 @@
 namespace App\Providers;
 
 use App\Auth\PasswordlessUserGuard;
+use App\Models\GamePoint;
 use App\Models\User;
+use App\Policies\GamePointPolicy;
 use Auth;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
 class AuthServiceProvider extends ServiceProvider
 {
-    protected $policies = [];
+    protected $policies = [
+        GamePoint::class => GamePointPolicy::class,
+        Game::class => GamePolicy::class,
+    ];
 
     public function boot(): void
     {
@@ -31,19 +36,19 @@ class AuthServiceProvider extends ServiceProvider
             return true; // Both admins and users can view
         });
 
-        // Example of a specific action only admins can do
+        // Allow regular users to create resources (except users which are handled by policies)
         Gate::define('create', function (User $user) {
-            return $user->isAdmin();
+            return true; // Both admins and users can create
         });
 
-        // Example of a specific action only admins can do
+        // Allow regular users to update resources (except users which are handled by policies)
         Gate::define('update', function (User $user) {
-            return $user->isAdmin();
+            return true; // Both admins and users can update
         });
 
-        // Example of a specific action only admins can do
+        // Allow regular users to delete resources (except users which are handled by policies)
         Gate::define('delete', function (User $user) {
-            return $user->isAdmin();
+            return true; // Both admins and users can delete
         });
     }
 }

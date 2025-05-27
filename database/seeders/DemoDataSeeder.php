@@ -28,6 +28,9 @@ class DemoDataSeeder extends Seeder
         // Create demo games and players
         $this->createDemoGamesAndPlayers();
 
+        // Create demo game points
+        $this->createDemoGamePoints();
+
         $this->command->info('Demo data created successfully!');
         $this->command->info('You can now log in with:');
         $this->command->info('- Admin: admin@example.com / password');
@@ -173,6 +176,70 @@ class DemoDataSeeder extends Seeder
                     foreach ($games as $game) {
                         $game->owners()->syncWithoutDetaching([$player->id]);
                     }
+                }
+            }
+        }
+    }
+
+    /**
+     * Create demo game points.
+     */
+    private function createDemoGamePoints(): void
+    {
+        $this->command->info('Creating demo game points...');
+
+        // Get admin user for assigning points
+        $admin = User::where('email', 'admin@example.com')->first();
+
+        // Get past and current events (not future events)
+        $events = Event::where('starts_at', '<=', now())->get();
+
+        foreach ($events as $event) {
+            // Get all games for this event
+            $games = $event->games;
+
+            foreach ($games as $game) {
+                // Get all players (owners) for this game
+                $players = $game->owners;
+
+                // Skip if no players
+                if ($players->isEmpty()) {
+                    continue;
+                }
+
+                // Shuffle players to randomize placements
+                $shuffledPlayers = $players->shuffle()->values();
+
+                // Assign points based on placement
+                foreach ($shuffledPlayers as $index => $player) {
+                    // Only assign placements to the first 3 players
+                    $placement = ($index < 3) ? $index + 1 : null;
+
+                    // Determine points based on placement
+                    $points = 0;
+                    if ($placement === 1) {
+                        $points = 5;
+                    } elseif ($placement === 2) {
+                        $points = 3;
+                    } elseif ($placement === 3) {
+                        $points = 1;
+                    }
+
+                    // Create or update game point
+                    \App\Models\GamePoint::updateOrCreate(
+                        [
+                            'game_id' => $game->id,
+                            'player_id' => $player->user_id,
+                        ],
+                        [
+                            'points' => $points,
+                            'placement' => $placement,
+                            'assigned_by' => $admin->id,
+                            'assigned_at' => $event->started_at ?? now(),
+                            'last_modified_by' => null,
+                            'last_modified_at' => null,
+                        ]
+                    );
                 }
             }
         }

@@ -57,6 +57,9 @@
                                 </td>
                                 <td class="px-6 py-4 text-right whitespace-nowrap">
                                     <div class="flex justify-end gap-2">
+                                        <a href="{{ route('games.show', $game) }}" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-xs px-2 py-1">
+                                            View
+                                        </a>
                                         <flux:button
                                             wire:click="removeGame({{ $game->id }})"
                                             wire:confirm="Are you sure you want to remove this game?"

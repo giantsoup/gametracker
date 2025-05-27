@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminController;
-use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
@@ -20,8 +19,10 @@ Route::middleware(['auth'])->group(function () {
     Volt::route('settings/appearance', 'settings.appearance')->name('settings.appearance');
 
     // Event Routes
-    Route::get('events', [App\Http\Controllers\EventController::class, 'index'])->name('events.index');
-    Route::get('events/{event}', [App\Http\Controllers\EventController::class, 'show'])->name('events.show');
+    Route::resource('events', App\Http\Controllers\EventController::class);
+
+    // Game Routes
+    Route::resource('games', App\Http\Controllers\GameController::class);
 
     Route::middleware(['admin'])->group(function () {
         Route::get('admin/settings', [AdminController::class, 'settings'])->name('admin.settings');
@@ -34,10 +35,7 @@ Route::middleware(['auth'])->group(function () {
             'as' => 'admin',
         ]);
 
-        // Event Management Routes
-        Route::resource('admin/events', EventController::class, [
-            'as' => 'admin',
-        ]);
+        // Only User Management Routes remain in admin area
     });
 });
 

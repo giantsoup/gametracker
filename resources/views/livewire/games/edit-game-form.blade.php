@@ -1,16 +1,17 @@
 <?php
 
+use App\Models\Game;
 use App\Models\Event;
 use function Livewire\Volt\{state, rules, mount, computed, protect};
 use Illuminate\Support\Facades\Redirect;
 
 // Define state properties
 state([
-    'event' => null,
+    'game' => null,
     'name' => '',
-    'active' => false,
-    'starts_at' => null,
-    'ends_at' => null,
+    'event_id' => null,
+    'duration' => 60,
+    'events' => [],
     'parentId' => null,
     'referrer' => null,
 ]);
@@ -18,23 +19,26 @@ state([
 // Set validation rules
 rules([
     'name' => ['required', 'string', 'max:255'],
-    'active' => ['boolean'],
-    'starts_at' => ['nullable', 'date'],
-    'ends_at' => ['nullable', 'date', 'after_or_equal:starts_at'],
+    'event_id' => ['required', 'exists:events,id'],
+    'duration' => ['required', 'integer', 'min:15'],
 ])->messages([
-    'ends_at.after_or_equal' => 'The end date must be after or equal to the start date.',
+    'event_id.required' => 'Please select an event.',
+    'event_id.exists' => 'The selected event does not exist.',
+    'duration.min' => 'Duration must be at least 15 minutes.',
 ]);
 
 // Mount component with initial data
-mount(function ($event, $parentId = null) {
-    // Set the event
-    $this->event = $event;
+mount(function ($game, $parentId = null) {
+    // Set the game
+    $this->game = $game;
 
-    // Initialize form fields with event data
-    $this->name = $event->name;
-    $this->active = $event->active;
-    $this->starts_at = $event->starts_at;
-    $this->ends_at = $event->ends_at;
+    // Initialize form fields with game data
+    $this->name = $game->name;
+    $this->event_id = $game->event_id;
+    $this->duration = $game->duration;
+
+    // Load all active events for the dropdown
+    $this->events = Event::orderBy('name')->get();
 
     if (!empty($parentId)) {
         $this->parentId = $parentId;
@@ -44,39 +48,38 @@ mount(function ($event, $parentId = null) {
     $this->referrer = request()->headers->get('referer');
 });
 
-// Update an event action
+// Update a game action
 $update = function () {
     $this->validate();
 
     try {
-        $this->event->update([
+        $this->game->update([
             'name' => $this->name,
-            'active' => $this->active,
-            'starts_at' => $this->starts_at,
-            'ends_at' => $this->ends_at,
+            'event_id' => $this->event_id,
+            'duration' => $this->duration,
         ]);
 
         // Show a success message
-        session()->flash('success', 'Event updated successfully');
+        session()->flash('success', 'Game updated successfully');
 
         // Dispatch event for parent components
         if ($this->parentId) {
-            $this->dispatch('event-updated')->to($this->parentId);
+            $this->dispatch('game-updated')->to($this->parentId);
         }
 
-        // Dispatch a global event to refresh the EventsTable component
-        $this->dispatch('event-updated');
+        // Dispatch a global event to refresh the GamesTable component
+        $this->dispatch('game-updated');
 
         // Determine where to redirect based on the referrer
         if ($this->referrer && str_contains($this->referrer, 'index')) {
             // Redirect to index page if they came from there
-            return $this->redirect(route('admin.events.index'), navigate: true);
+            return $this->redirect(route('games.index'), navigate: true);
         } else {
             // Default to show page
-            return $this->redirect(route('admin.events.show', $this->event), navigate: true);
+            return $this->redirect(route('games.show', $this->game), navigate: true);
         }
     } catch (\Exception $e) {
-        session()->flash('error', 'Failed to update event: '.$e->getMessage());
+        session()->flash('error', 'Failed to update game: '.$e->getMessage());
         return null;
     }
 };
@@ -95,30 +98,31 @@ $update = function () {
             autocomplete="name"
         />
 
-        <flux:checkbox
-            wire:model="active"
-            :label="__('Active')"
-        />
+        <flux:select
+            wire:model="event_id"
+            :label="__('Event')"
+            required
+        >
+            <option value="">{{ __('Select an event') }}</option>
+            @foreach($events as $event)
+                <option value="{{ $event->id }}">{{ $event->name }}</option>
+            @endforeach
+        </flux:select>
 
         <flux:input
-            wire:model="starts_at"
-            :label="__('Start Date')"
-            type="datetime-local"
-            autocomplete="off"
-        />
-
-        <flux:input
-            wire:model="ends_at"
-            :label="__('End Date')"
-            type="datetime-local"
-            autocomplete="off"
-            :description="__('Must be after or equal to the start date')"
+            wire:model="duration"
+            :label="__('Duration (minutes)')"
+            type="number"
+            min="15"
+            step="15"
+            required
+            :description="__('Duration in minutes, must be in 15-minute intervals')"
         />
 
         <div class="flex items-center gap-4">
             <div class="flex items-center gap-3">
                 <flux:button
-                    href="{{ route('admin.events.index') }}"
+                    href="{{ route('games.index') }}"
                     wire:navigate
                     variant="outline"
                 >
@@ -130,7 +134,7 @@ $update = function () {
                     variant="primary"
                     wire:loading.attr="disabled"
                 >
-                    <span wire:loading.remove wire:target="update">{{ __('Update Event') }}</span>
+                    <span wire:loading.remove wire:target="update">{{ __('Update Game') }}</span>
                     <span wire:loading wire:target="update" class="flex items-center">
                         <flux:icon icon="arrow-path" class="mr-2 h-4 w-4 animate-spin"/>
                         {{ __('Updating...') }}

@@ -110,4 +110,28 @@ class User extends Authenticatable
             ->withPivot(['nickname', 'joined_at', 'left_at'])
             ->withTimestamps();
     }
+
+    /**
+     * Get the points earned by the user.
+     */
+    public function earnedPoints(): HasMany
+    {
+        return $this->hasMany(GamePoint::class, 'player_id');
+    }
+
+    /**
+     * Get the points assigned by the user.
+     */
+    public function assignedPoints(): HasMany
+    {
+        return $this->hasMany(GamePoint::class, 'assigned_by');
+    }
+
+    /**
+     * Get the points modified by the user.
+     */
+    public function modifiedPoints(): HasMany
+    {
+        return $this->hasMany(GamePoint::class, 'last_modified_by');
+    }
 }

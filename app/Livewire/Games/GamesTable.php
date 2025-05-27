@@ -1,36 +1,32 @@
 <?php
 
-namespace App\Livewire\Admin\Events;
+namespace App\Livewire\Games;
 
 use App\Livewire\CrudTable;
-use App\Models\Event;
-use Illuminate\View\ComponentAttributeBag;
+use App\Models\Game;
 use Livewire\Attributes\On;
 
-class EventsTable extends CrudTable
+class GamesTable extends CrudTable
 {
-    public string $modelName = Event::class;
+    public string $modelName = Game::class;
 
-    public string $modelRouteBase = 'admin.events';
+    public string $modelRouteBase = 'games';
 
     public array $columns = [
         'name' => 'Name',
-        'active' => 'Status',
-        'starts_at' => 'Starts At',
-        'ends_at' => 'Ends At',
+        'event.name' => 'Event',
+        'duration' => 'Duration',
         'created_at' => 'Created At',
     ];
 
-    public array $searchFields = ['name'];
+    public array $searchFields = ['name', 'event.name'];
 
     // Define form properties
     public string $name = '';
 
-    public bool $active = false;
+    public ?int $event_id = null;
 
-    public ?string $starts_at = null;
-
-    public ?string $ends_at = null;
+    public int $duration = 60;
 
     public array $formData = [];
 
@@ -54,11 +50,11 @@ class EventsTable extends CrudTable
 
     public function getCreateFormComponent(): ?string
     {
-        return 'admin.events.create-event-form';
+        return 'games.create-game-form';
     }
 
     /**
-     * Get the component data to pass to the create event form component
+     * Get the component data to pass to the create game form component
      */
     public function getCreateComponentData(): array
     {
@@ -66,10 +62,10 @@ class EventsTable extends CrudTable
     }
 
     /**
-     * Listen for the event-created event and refresh the data
+     * Listen for the game-created event and refresh the data
      */
-    #[On('event-created')]
-    public function refreshAfterEventCreated(): void
+    #[On('game-created')]
+    public function refreshAfterGameCreated(): void
     {
         $this->resetPage();
     }
@@ -83,16 +79,8 @@ class EventsTable extends CrudTable
      */
     public function renderCustomColumn($key, $resource)
     {
-        if ($key === 'active') {
-            $color = $resource->isActive() ? 'green' : 'zinc';
-            $text = $resource->isActive() ? 'Active' : 'Inactive';
-
-            return view('flux.badge.index', [
-                'variant' => 'pill',
-                'color' => $color,
-                'slot' => $text,
-                'attributes' => new ComponentAttributeBag,
-            ]);
+        if ($key === 'duration') {
+            return $resource->getDurationForHumans();
         }
 
         return null;

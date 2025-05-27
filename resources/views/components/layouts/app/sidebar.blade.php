@@ -18,6 +18,9 @@
             <flux:navlist.item icon="calendar" :href="route('events.index')"
                                :current="request()->routeIs('events.index') || request()->routeIs('events.show')"
                                wire:navigate>{{ __('Events') }}</flux:navlist.item>
+            <flux:navlist.item icon="puzzle-piece" :href="route('games.index')"
+                               :current="request()->routeIs('games.index') || request()->routeIs('games.*')"
+                               wire:navigate>{{ __('Games') }}</flux:navlist.item>
         </flux:navlist.group>
     </flux:navlist>
 
@@ -27,12 +30,6 @@
                                :current="request()->routeIs('admin.users.index') || request()->routeIs('admin.users.*')"
                                wire:navigate>
                 {{ __('Users') }}
-            </flux:navlist.item>
-
-            <flux:navlist.item icon="calendar" :href="route('admin.events.index')"
-                               :current="request()->routeIs('admin.events.index') || request()->routeIs('admin.events.*')"
-                               wire:navigate>
-                {{ __('Events') }}
             </flux:navlist.item>
         </flux:navlist.group>
     </flux:navlist>
