@@ -100,4 +100,13 @@ class Player extends Model
     {
         return $this->nickname ?? $this->user->name;
     }
+
+    /**
+     * Get the display name for the player.
+     * This method is provided for backward compatibility.
+     */
+    public function getDisplayName(): string
+    {
+        return $this->display_name;
+    }
 }
