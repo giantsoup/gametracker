@@ -3,6 +3,9 @@
 use App\Models\Event;
 use App\Models\Player;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+uses(RefreshDatabase::class);
 
 test('player belongs to a user', function () {
     $player = Player::factory()->create();

@@ -18,10 +18,11 @@ class GameFactory extends Factory
     public function definition(): array
     {
         // Generate a duration that's a multiple of 15 minutes
-        $durationInMinutes = $this->faker->randomElement([15, 30, 45, 60, 90, 120, 180, 240]);
+        $durations = [15, 30, 45, 60, 90, 120, 180, 240];
+        $durationInMinutes = $durations[array_rand($durations)];
 
         return [
-            'name' => $this->faker->words(2, true),
+            'name' => 'Game '.uniqid(),
             'duration' => $durationInMinutes,
             'event_id' => Event::factory(),
         ];
@@ -33,7 +34,7 @@ class GameFactory extends Factory
     public function shortDuration(): self
     {
         return $this->state(fn (array $attributes) => [
-            'duration' => $this->faker->randomElement([15, 30]),
+            'duration' => [15, 30][array_rand([15, 30])],
         ]);
     }
 
@@ -43,7 +44,7 @@ class GameFactory extends Factory
     public function longDuration(): self
     {
         return $this->state(fn (array $attributes) => [
-            'duration' => $this->faker->randomElement([120, 180, 240, 300]),
+            'duration' => [120, 180, 240, 300][array_rand([120, 180, 240, 300])],
         ]);
     }
 }

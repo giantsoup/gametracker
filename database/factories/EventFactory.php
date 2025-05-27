@@ -20,14 +20,19 @@ class EventFactory extends Factory
      */
     public function definition(): array
     {
-        $startsAt = $this->faker->dateTimeBetween('-1 month', '+1 month');
+        // Generate a random date between -1 month and +1 month
+        $startDate = strtotime('-1 month');
+        $endDate = strtotime('+1 month');
+        $randomTimestamp = mt_rand($startDate, $endDate);
+        $startsAt = new \DateTime;
+        $startsAt->setTimestamp($randomTimestamp);
         $endsAt = Carbon::instance($startsAt)->addHours(
-            $this->faker->numberBetween(1, 72)
+            rand(1, 72)
         );
 
         return [
-            'name' => $this->faker->sentence(3),
-            'active' => $this->faker->boolean(70),
+            'name' => 'Event '.uniqid(),
+            'active' => (rand(1, 100) <= 70),
             'starts_at' => $startsAt,
             'ends_at' => $endsAt,
             'started_at' => null,
@@ -63,8 +68,8 @@ class EventFactory extends Factory
     public function upcoming(): static
     {
         return $this->state(fn (array $attributes) => [
-            'starts_at' => Carbon::now()->addDays($this->faker->numberBetween(1, 30)),
-            'ends_at' => Carbon::now()->addDays($this->faker->numberBetween(31, 60)),
+            'starts_at' => Carbon::now()->addDays(rand(1, 30)),
+            'ends_at' => Carbon::now()->addDays(rand(31, 60)),
             'started_at' => null,
             'ended_at' => null,
         ]);
@@ -76,9 +81,9 @@ class EventFactory extends Factory
     public function ongoing(): static
     {
         return $this->state(fn (array $attributes) => [
-            'starts_at' => Carbon::now()->subHours($this->faker->numberBetween(1, 24)),
-            'ends_at' => Carbon::now()->addHours($this->faker->numberBetween(1, 24)),
-            'started_at' => Carbon::now()->subHours($this->faker->numberBetween(1, 24)),
+            'starts_at' => Carbon::now()->subHours(rand(1, 24)),
+            'ends_at' => Carbon::now()->addHours(rand(1, 24)),
+            'started_at' => Carbon::now()->subHours(rand(1, 24)),
             'ended_at' => null,
             'active' => true,
         ]);
@@ -89,8 +94,8 @@ class EventFactory extends Factory
      */
     public function past(): static
     {
-        $endsAt = Carbon::now()->subDays($this->faker->numberBetween(1, 30));
-        $startsAt = Carbon::instance($endsAt)->subHours($this->faker->numberBetween(1, 72));
+        $endsAt = Carbon::now()->subDays(rand(1, 30));
+        $startsAt = Carbon::instance($endsAt)->subHours(rand(1, 72));
 
         return $this->state(fn (array $attributes) => [
             'starts_at' => $startsAt,

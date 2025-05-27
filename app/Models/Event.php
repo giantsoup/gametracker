@@ -137,7 +137,7 @@ class Event extends Model
      */
     public function users(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'players')
+        return $this->belongsToMany(User::class, 'players', 'event_id', 'user_id')
             ->withPivot(['nickname', 'joined_at', 'left_at'])
             ->withTimestamps();
     }

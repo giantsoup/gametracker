@@ -8,13 +8,14 @@ use App\Models\Game;
 use App\Models\Player;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class CreateGameFormTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function create_game_form_can_render()
     {
         $event = Event::factory()->create();
@@ -23,7 +24,7 @@ class CreateGameFormTest extends TestCase
             ->assertStatus(200);
     }
 
-    /** @test */
+    #[Test]
     public function create_game_form_can_toggle_visibility()
     {
         $event = Event::factory()->create();
@@ -36,7 +37,7 @@ class CreateGameFormTest extends TestCase
             ->assertSet('showForm', false);
     }
 
-    /** @test */
+    #[Test]
     public function create_game_form_displays_all_players()
     {
         $event = Event::factory()->create();
@@ -55,7 +56,7 @@ class CreateGameFormTest extends TestCase
             ->assertSee('Player Two');
     }
 
-    /** @test */
+    #[Test]
     public function create_game_form_can_set_values()
     {
         $event = Event::factory()->create();
@@ -67,7 +68,7 @@ class CreateGameFormTest extends TestCase
             ->assertSet('duration', 45);
     }
 
-    /** @test */
+    #[Test]
     public function create_game_form_can_create_game()
     {
         $event = Event::factory()->create();
@@ -98,7 +99,7 @@ class CreateGameFormTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function create_game_form_validates_name()
     {
         $event = Event::factory()->create();
@@ -109,7 +110,7 @@ class CreateGameFormTest extends TestCase
             ->assertHasErrors(['name' => 'required']);
     }
 
-    /** @test */
+    #[Test]
     public function create_game_form_validates_duration()
     {
         $event = Event::factory()->create();
@@ -121,7 +122,7 @@ class CreateGameFormTest extends TestCase
             ->assertHasErrors(['duration' => 'multiple_of']);
     }
 
-    /** @test */
+    #[Test]
     public function create_game_form_validates_duration_minimum()
     {
         $event = Event::factory()->create();

@@ -58,7 +58,7 @@ class SetupDemoData extends Command
 
             return Command::SUCCESS;
         } catch (Throwable $e) {
-            // Rollback the transaction in case of an error
+            // Roll back the transaction in case of an error
             DB::rollBack();
 
             $this->newLine();

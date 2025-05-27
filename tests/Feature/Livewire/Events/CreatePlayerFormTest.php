@@ -8,13 +8,14 @@ use App\Models\Player;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class CreatePlayerFormTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function create_player_form_can_render()
     {
         $event = Event::factory()->create();
@@ -23,7 +24,7 @@ class CreatePlayerFormTest extends TestCase
             ->assertStatus(200);
     }
 
-    /** @test */
+    #[Test]
     public function create_player_form_can_toggle_visibility()
     {
         $event = Event::factory()->create();
@@ -36,7 +37,7 @@ class CreatePlayerFormTest extends TestCase
             ->assertSet('showForm', false);
     }
 
-    /** @test */
+    #[Test]
     public function create_player_form_displays_all_users()
     {
         $event = Event::factory()->create();
@@ -49,7 +50,7 @@ class CreatePlayerFormTest extends TestCase
             ->assertSee('Jane Smith');
     }
 
-    /** @test */
+    #[Test]
     public function create_player_form_can_set_user_id()
     {
         $event = Event::factory()->create();
@@ -60,7 +61,7 @@ class CreatePlayerFormTest extends TestCase
             ->assertSet('userId', $user->id);
     }
 
-    /** @test */
+    #[Test]
     public function create_player_form_can_create_player()
     {
         $event = Event::factory()->create();
@@ -81,7 +82,7 @@ class CreatePlayerFormTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function create_player_form_validates_user_id()
     {
         $event = Event::factory()->create();
@@ -92,7 +93,7 @@ class CreatePlayerFormTest extends TestCase
             ->assertHasErrors(['userId' => 'required']);
     }
 
-    /** @test */
+    #[Test]
     public function create_player_form_prevents_duplicate_players()
     {
         $event = Event::factory()->create();

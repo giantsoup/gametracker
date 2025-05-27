@@ -6,13 +6,14 @@ use App\Models\Event;
 use App\Models\Player;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class EventControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function user_can_view_events_index()
     {
         $user = User::factory()->create();
@@ -30,7 +31,7 @@ class EventControllerTest extends TestCase
         }
     }
 
-    /** @test */
+    #[Test]
     public function user_can_view_event_details()
     {
         $user = User::factory()->create();
@@ -49,7 +50,7 @@ class EventControllerTest extends TestCase
         $response->assertSeeLivewire('events.create-player-form');
     }
 
-    /** @test */
+    #[Test]
     public function user_can_see_players_in_event()
     {
         $user = User::factory()->create();
@@ -71,7 +72,7 @@ class EventControllerTest extends TestCase
         }
     }
 
-    /** @test */
+    #[Test]
     public function guest_cannot_view_events()
     {
         $event = Event::factory()->create();

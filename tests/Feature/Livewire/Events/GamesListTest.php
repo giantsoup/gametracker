@@ -8,13 +8,14 @@ use App\Models\Game;
 use App\Models\Player;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class GamesListTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function games_list_can_render()
     {
         $event = Event::factory()->create();
@@ -23,7 +24,7 @@ class GamesListTest extends TestCase
             ->assertStatus(200);
     }
 
-    /** @test */
+    #[Test]
     public function games_list_displays_games()
     {
         $event = Event::factory()->create();
@@ -37,7 +38,7 @@ class GamesListTest extends TestCase
             ->assertSee($games[2]->name);
     }
 
-    /** @test */
+    #[Test]
     public function games_list_displays_game_duration()
     {
         $event = Event::factory()->create();
@@ -50,7 +51,7 @@ class GamesListTest extends TestCase
             ->assertSee('1h');
     }
 
-    /** @test */
+    #[Test]
     public function games_list_displays_game_owners()
     {
         $event = Event::factory()->create();
@@ -68,7 +69,7 @@ class GamesListTest extends TestCase
             ->assertSee($player->getDisplayName());
     }
 
-    /** @test */
+    #[Test]
     public function games_list_can_remove_game()
     {
         $event = Event::factory()->create();

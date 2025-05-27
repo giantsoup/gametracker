@@ -7,13 +7,14 @@ use App\Models\Event;
 use App\Models\Player;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class PlayersListTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function players_list_can_render()
     {
         $event = Event::factory()->create();
@@ -22,7 +23,7 @@ class PlayersListTest extends TestCase
             ->assertStatus(200);
     }
 
-    /** @test */
+    #[Test]
     public function players_list_displays_players()
     {
         $event = Event::factory()->create();
@@ -36,7 +37,7 @@ class PlayersListTest extends TestCase
             ->assertSee($players[2]->user->name);
     }
 
-    /** @test */
+    #[Test]
     public function players_list_can_remove_player()
     {
         $event = Event::factory()->create();
@@ -54,7 +55,7 @@ class PlayersListTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function players_list_can_mark_player_as_joined()
     {
         $event = Event::factory()->create();
@@ -72,7 +73,7 @@ class PlayersListTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function players_list_can_mark_player_as_left()
     {
         $event = Event::factory()->create();
