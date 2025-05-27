@@ -12,7 +12,7 @@
 
         @if ($showForm)
             <div class="mt-4 bg-white dark:bg-zinc-800 shadow sm:rounded-lg">
-                <div class="px-4 py-5 sm:p-6">
+                <div class="">
                     <div class="space-y-4">
                         <div>
                             <flux:input
@@ -23,9 +23,9 @@
                                 required
                             />
                             @error('name')
-                                <flux:text class="mt-2 text-sm !text-red-600 !dark:text-red-400">
-                                    {{ $message }}
-                                </flux:text>
+                            <flux:text class="mt-2 text-sm !text-red-600 !dark:text-red-400">
+                                {{ $message }}
+                            </flux:text>
                             @enderror
                         </div>
 
@@ -41,14 +41,14 @@
                                 help="Duration must be in 15-minute intervals (e.g., 15, 30, 45, 60)"
                             />
                             @error('duration')
-                                <flux:text class="mt-2 text-sm !text-red-600 !dark:text-red-400">
-                                    {{ $message }}
-                                </flux:text>
+                            <flux:text class="mt-2 text-sm !text-red-600 !dark:text-red-400">
+                                {{ $message }}
+                            </flux:text>
                             @enderror
                         </div>
 
                         <div>
-                            <flux:label for="selectedPlayerIds" value="Game Owners (Optional)" />
+                            <flux:label for="selectedPlayerIds" value="Game Owners (Optional)"/>
                             <div class="mt-1">
                                 @if ($players->isEmpty())
                                     <flux:text class="text-sm text-zinc-500 dark:text-zinc-400">
@@ -65,7 +65,8 @@
                                                     value="{{ $player->id }}"
                                                     class="h-4 w-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 dark:border-zinc-600 dark:bg-zinc-700 dark:focus:ring-indigo-600"
                                                 >
-                                                <label for="player-{{ $player->id }}" class="ml-2 text-sm text-zinc-700 dark:text-zinc-300">
+                                                <label for="player-{{ $player->id }}"
+                                                       class="ml-2 text-sm text-zinc-700 dark:text-zinc-300">
                                                     {{ $player->getDisplayName() }}
                                                 </label>
                                             </div>
@@ -74,9 +75,9 @@
                                 @endif
                             </div>
                             @error('selectedPlayerIds')
-                                <flux:text class="mt-2 text-sm !text-red-600 !dark:text-red-400">
-                                    {{ $message }}
-                                </flux:text>
+                            <flux:text class="mt-2 text-sm !text-red-600 !dark:text-red-400">
+                                {{ $message }}
+                            </flux:text>
                             @enderror
                         </div>
 

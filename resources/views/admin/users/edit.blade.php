@@ -5,9 +5,10 @@
         </h2>
     </x-slot:header>
 
-    <div class="py-12">
-        <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
-            <div class="overflow-hidden bg-white dark:bg-zinc-800 shadow-sm sm:rounded-lg border border-zinc-200 dark:border-zinc-700">
+    <div class="">
+        <div class="mx-auto max-w-7xl">
+            <div
+                class="overflow-hidden bg-white dark:bg-zinc-800 shadow-sm sm:rounded-lg border border-zinc-200 dark:border-zinc-700">
                 <div class="p-6 bg-white dark:bg-zinc-800 border-b border-gray-200 dark:border-zinc-700">
                     <form method="POST" action="{{ route('admin.users.update', $user) }}" class="space-y-6">
                         @csrf
@@ -25,9 +26,9 @@
                                 autocomplete="name"
                             />
                             @error('name')
-                                <flux:text class="mt-2 text-sm !text-red-600 !dark:text-red-400">
-                                    {{ $message }}
-                                </flux:text>
+                            <flux:text class="mt-2 text-sm !text-red-600 !dark:text-red-400">
+                                {{ $message }}
+                            </flux:text>
                             @enderror
                         </div>
 
@@ -42,9 +43,9 @@
                                 autocomplete="email"
                             />
                             @error('email')
-                                <flux:text class="mt-2 text-sm !text-red-600 !dark:text-red-400">
-                                    {{ $message }}
-                                </flux:text>
+                            <flux:text class="mt-2 text-sm !text-red-600 !dark:text-red-400">
+                                {{ $message }}
+                            </flux:text>
                             @enderror
                         </div>
 
@@ -68,9 +69,9 @@
                                 {{ __('Determines what permissions the user will have in the system') }}
                             </flux:text>
                             @error('role')
-                                <flux:text class="mt-2 text-sm !text-red-600 !dark:text-red-400">
-                                    {{ $message }}
-                                </flux:text>
+                            <flux:text class="mt-2 text-sm !text-red-600 !dark:text-red-400">
+                                {{ $message }}
+                            </flux:text>
                             @enderror
                         </div>
 

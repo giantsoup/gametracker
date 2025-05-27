@@ -21,8 +21,8 @@
         </div>
     </x-slot:header>
 
-    <div class="py-12">
-        <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
+    <div class="">
+        <div class="mx-auto max-w-7xl">
             <div
                 class="overflow-hidden bg-white dark:bg-zinc-800 shadow-sm sm:rounded-lg border border-zinc-200 dark:border-zinc-700">
                 <div class="p-6 bg-white dark:bg-zinc-800 border-b border-gray-200 dark:border-zinc-700">
@@ -97,7 +97,8 @@
                                             </flux:button>
                                         </form>
                                     @else
-                                        <div class="p-4 text-sm text-blue-700 bg-blue-100 dark:bg-blue-900/20 dark:text-blue-300 rounded-md text-center">
+                                        <div
+                                            class="p-4 text-sm text-blue-700 bg-blue-100 dark:bg-blue-900/20 dark:text-blue-300 rounded-md text-center">
                                             {{ __('You cannot delete your own account') }}
                                         </div>
                                     @endif

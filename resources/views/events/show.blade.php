@@ -5,9 +5,10 @@
         </h2>
     </x-slot:header>
 
-    <div class="py-12">
-        <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
-            <div class="overflow-hidden bg-white dark:bg-zinc-800 shadow-sm sm:rounded-lg border border-zinc-200 dark:border-zinc-700">
+    <div class="">
+        <div class="mx-auto max-w-7xl">
+            <div
+                class="overflow-hidden bg-white dark:bg-zinc-800 shadow-sm sm:rounded-lg border border-zinc-200 dark:border-zinc-700">
                 <div class="p-6 bg-white dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700">
                     <div class="space-y-6">
                         <div>
@@ -25,11 +26,13 @@
                                 <h4 class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Status</h4>
                                 <p class="mt-1 text-sm">
                                     @if($event->active)
-                                        <span class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/20 dark:text-green-300">
+                                        <span
+                                            class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/20 dark:text-green-300">
                                             Active
                                         </span>
                                     @else
-                                        <span class="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-800 dark:bg-zinc-700 dark:text-zinc-300">
+                                        <span
+                                            class="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-800 dark:bg-zinc-700 dark:text-zinc-300">
                                             Inactive
                                         </span>
                                     @endif
@@ -64,17 +67,19 @@
                 </div>
             </div>
 
-            <div class="mt-8 overflow-hidden bg-white dark:bg-zinc-800 shadow-sm sm:rounded-lg border border-zinc-200 dark:border-zinc-700">
+            <div
+                class="mt-8 overflow-hidden bg-white dark:bg-zinc-800 shadow-sm sm:rounded-lg border border-zinc-200 dark:border-zinc-700">
                 <div class="p-6 bg-white dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700">
-                    <livewire:events.players-list :event="$event" />
-                    <livewire:events.create-player-form :event="$event" />
+                    <livewire:events.players-list :event="$event"/>
+                    <livewire:events.create-player-form :event="$event"/>
                 </div>
             </div>
 
-            <div class="mt-8 overflow-hidden bg-white dark:bg-zinc-800 shadow-sm sm:rounded-lg border border-zinc-200 dark:border-zinc-700">
+            <div
+                class="mt-8 overflow-hidden bg-white dark:bg-zinc-800 shadow-sm sm:rounded-lg border border-zinc-200 dark:border-zinc-700">
                 <div class="p-6 bg-white dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700">
-                    <livewire:events.games-list :event="$event" />
-                    <livewire:events.create-game-form :event="$event" />
+                    <livewire:events.games-list :event="$event"/>
+                    <livewire:events.create-game-form :event="$event"/>
                 </div>
             </div>
         </div>

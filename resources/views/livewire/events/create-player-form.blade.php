@@ -12,7 +12,7 @@
 
         @if ($showForm)
             <div class="mt-4 bg-white dark:bg-zinc-800 shadow sm:rounded-lg">
-                <div class="px-4 py-5 sm:p-6">
+                <div class="">
                     <div class="space-y-4">
                         <div>
                             <flux:select
@@ -30,9 +30,9 @@
                             </flux:select>
 
                             @error('userId')
-                                <flux:text class="mt-2 text-sm !text-red-600 !dark:text-red-400">
-                                    {{ $message }}
-                                </flux:text>
+                            <flux:text class="mt-2 text-sm !text-red-600 !dark:text-red-400">
+                                {{ $message }}
+                            </flux:text>
                             @enderror
                         </div>
 
@@ -44,9 +44,9 @@
                                 type="text"
                             />
                             @error('nickname')
-                                <flux:text class="mt-2 text-sm !text-red-600 !dark:text-red-400">
-                                    {{ $message }}
-                                </flux:text>
+                            <flux:text class="mt-2 text-sm !text-red-600 !dark:text-red-400">
+                                {{ $message }}
+                            </flux:text>
                             @enderror
                         </div>
 

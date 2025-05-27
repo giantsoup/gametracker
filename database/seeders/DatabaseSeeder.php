@@ -14,6 +14,9 @@ class DatabaseSeeder extends Seeder
         $this->call([
             SystemUserSeeder::class,
             AdminUserSeeder::class,
+            // DemoDataSeeder is not called by default to avoid populating
+            // the database with demo data during regular seeding
+            // It is called explicitly by the setup-demo-data command
         ]);
     }
 }
