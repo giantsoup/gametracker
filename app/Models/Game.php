@@ -22,6 +22,9 @@ class Game extends Model
         'name',
         'duration',
         'event_id',
+        'total_points',
+        'points_recipients',
+        'points_distribution',
     ];
 
     /**
@@ -33,6 +36,9 @@ class Game extends Model
     {
         return [
             'duration' => 'integer',
+            'total_points' => 'integer',
+            'points_recipients' => 'integer',
+            'points_distribution' => 'array',
         ];
     }
 
@@ -76,5 +82,74 @@ class Game extends Model
     public function points(): HasMany
     {
         return $this->hasMany(GamePoint::class);
+    }
+
+    /**
+     * Get the default points distribution.
+     *
+     * @return array<int, int>
+     */
+    public static function getDefaultPointsDistribution(): array
+    {
+        return [
+            1 => 5, // 1st place: 5 points
+            2 => 3, // 2nd place: 3 points
+            3 => 1, // 3rd place: 1 point
+        ];
+    }
+
+    /**
+     * Get the points for a specific placement.
+     */
+    public function getPointsForPlacement(int $placement): int
+    {
+        if ($this->points_distribution === null) {
+            $defaultDistribution = self::getDefaultPointsDistribution();
+
+            return $defaultDistribution[$placement] ?? 0;
+        }
+
+        return $this->points_distribution[$placement] ?? 0;
+    }
+
+    /**
+     * Generate a points distribution based on the total points and number of recipients.
+     *
+     * @return array<int, int>
+     */
+    public function generatePointsDistribution(): array
+    {
+        if ($this->points_recipients <= 0) {
+            return [];
+        }
+
+        // If we already have a custom distribution, return it
+        if ($this->points_distribution !== null) {
+            return $this->points_distribution;
+        }
+
+        // Otherwise, generate a distribution based on the default pattern
+        $distribution = [];
+        $remainingPoints = $this->total_points;
+
+        // Use a decreasing pattern similar to the default (5, 3, 1)
+        for ($i = 1; $i <= $this->points_recipients; $i++) {
+            if ($i === $this->points_recipients) {
+                // Last recipient gets all remaining points
+                $distribution[$i] = $remainingPoints;
+            } else {
+                // Calculate points for this placement
+                $points = max(1, floor($remainingPoints * 0.5));
+                $distribution[$i] = $points;
+                $remainingPoints -= $points;
+            }
+
+            // If we've distributed all points, stop
+            if ($remainingPoints <= 0) {
+                break;
+            }
+        }
+
+        return $distribution;
     }
 }

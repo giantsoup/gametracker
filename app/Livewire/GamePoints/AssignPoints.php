@@ -139,21 +139,8 @@ class AssignPoints extends Component
             return;
         }
 
-        // Apply points based on placement according to business rules
-        switch ($placement) {
-            case 1:
-                $this->playerPoints[$playerId] = 5;
-                break;
-            case 2:
-                $this->playerPoints[$playerId] = 3;
-                break;
-            case 3:
-                $this->playerPoints[$playerId] = 1;
-                break;
-            default:
-                $this->playerPoints[$playerId] = 0;
-                break;
-        }
+        // Use the game's points distribution to determine points
+        $this->playerPoints[$playerId] = $this->game->getPointsForPlacement($placement);
     }
 
     public function render()

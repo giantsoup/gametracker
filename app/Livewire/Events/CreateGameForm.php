@@ -19,11 +19,20 @@ class CreateGameForm extends Component
 
     public bool $showForm = false;
 
+    public int $totalPoints = 9; // Default total points
+
+    public int $pointsRecipients = 3; // Default number of recipients
+
+    public ?array $pointsDistribution = null; // Custom points distribution
+
     protected $rules = [
         'name' => 'required|string|max:255',
         'duration' => 'required|integer|min:15|multiple_of:15',
         'selectedPlayerIds' => 'array',
         'selectedPlayerIds.*' => 'exists:players,id',
+        'totalPoints' => 'required|integer|min:1',
+        'pointsRecipients' => 'required|integer|min:1',
+        'pointsDistribution' => 'nullable|array',
     ];
 
     protected $messages = [
@@ -38,8 +47,21 @@ class CreateGameForm extends Component
     public function toggleForm()
     {
         $this->showForm = ! $this->showForm;
-        $this->reset(['name', 'duration', 'selectedPlayerIds']);
+        $this->reset(['name', 'duration', 'selectedPlayerIds', 'totalPoints', 'pointsRecipients', 'pointsDistribution']);
         $this->duration = 60; // Reset to default
+        $this->totalPoints = 9; // Reset to default
+        $this->pointsRecipients = 3; // Reset to default
+    }
+
+    /**
+     * Receive points distribution configuration from the PointsDistributionConfig component.
+     */
+    #[On('points-distribution-updated')]
+    public function updatePointsDistribution($data)
+    {
+        $this->totalPoints = $data['total_points'];
+        $this->pointsRecipients = $data['points_recipients'];
+        $this->pointsDistribution = $data['points_distribution'];
     }
 
     public function createGame()
@@ -50,14 +72,19 @@ class CreateGameForm extends Component
             'name' => $this->name,
             'duration' => $this->duration,
             'event_id' => $this->event->id,
+            'total_points' => $this->totalPoints,
+            'points_recipients' => $this->pointsRecipients,
+            'points_distribution' => $this->pointsDistribution,
         ]);
 
         if (! empty($this->selectedPlayerIds)) {
             $game->owners()->attach($this->selectedPlayerIds);
         }
 
-        $this->reset(['name', 'duration', 'selectedPlayerIds', 'showForm']);
+        $this->reset(['name', 'duration', 'selectedPlayerIds', 'totalPoints', 'pointsRecipients', 'pointsDistribution', 'showForm']);
         $this->duration = 60; // Reset to default
+        $this->totalPoints = 9; // Reset to default
+        $this->pointsRecipients = 3; // Reset to default
         $this->dispatch('gameAdded');
     }
 

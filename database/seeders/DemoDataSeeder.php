@@ -135,6 +135,25 @@ class DemoDataSeeder extends Seeder
             // Create or update games for each event
             $gameCount = rand(3, 6);
             for ($i = 1; $i <= $gameCount; $i++) {
+                // Create different points distributions for variety
+                $pointsDistributions = [
+                    // Default distribution (5, 3, 1)
+                    null,
+                    // Custom distribution with more recipients
+                    [1 => 7, 2 => 5, 3 => 3, 4 => 1],
+                    // Custom distribution with different point values
+                    [1 => 10, 2 => 5, 3 => 2],
+                    // Custom distribution with equal points
+                    [1 => 3, 2 => 3, 3 => 3],
+                ];
+
+                // Randomly select a points distribution or use null for default
+                $pointsDistribution = $pointsDistributions[array_rand($pointsDistributions)];
+
+                // Calculate total points and recipients based on the distribution
+                $totalPoints = $pointsDistribution ? array_sum($pointsDistribution) : 9; // Default is 9 (5+3+1)
+                $pointsRecipients = $pointsDistribution ? count($pointsDistribution) : 3; // Default is 3
+
                 $game = Game::updateOrCreate(
                     [
                         'name' => "Game $i for $event->name",
@@ -142,6 +161,9 @@ class DemoDataSeeder extends Seeder
                     ],
                     [
                         'duration' => rand(30, 180), // 30 minutes to 3 hours
+                        'total_points' => $totalPoints,
+                        'points_recipients' => $pointsRecipients,
+                        'points_distribution' => $pointsDistribution,
                     ]
                 );
 
@@ -212,17 +234,14 @@ class DemoDataSeeder extends Seeder
 
                 // Assign points based on placement
                 foreach ($shuffledPlayers as $index => $player) {
-                    // Only assign placements to the first 3 players
-                    $placement = ($index < 3) ? $index + 1 : null;
+                    // Only assign placements to players based on the game's points_recipients
+                    $maxRecipients = $game->points_recipients ?? 3; // Default to 3 if not set
+                    $placement = ($index < $maxRecipients) ? $index + 1 : null;
 
-                    // Determine points based on placement
+                    // Determine points based on placement using the game's points distribution
                     $points = 0;
-                    if ($placement === 1) {
-                        $points = 5;
-                    } elseif ($placement === 2) {
-                        $points = 3;
-                    } elseif ($placement === 3) {
-                        $points = 1;
+                    if ($placement !== null) {
+                        $points = $game->getPointsForPlacement($placement);
                     }
 
                     // Create or update game point

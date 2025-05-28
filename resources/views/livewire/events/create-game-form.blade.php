@@ -81,6 +81,18 @@
                             @enderror
                         </div>
 
+                        <div>
+                            <flux:label value="Points Distribution"/>
+                            <div class="mt-1">
+                                <livewire:games.points-distribution-config wire:key="points-distribution" />
+                            </div>
+                            @error('pointsDistribution')
+                            <flux:text class="mt-2 text-sm !text-red-600 !dark:text-red-400">
+                                {{ $message }}
+                            </flux:text>
+                            @enderror
+                        </div>
+
                         <div class="flex justify-end">
                             <flux:button
                                 wire:click="createGame"
