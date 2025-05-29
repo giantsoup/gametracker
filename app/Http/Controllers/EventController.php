@@ -24,7 +24,16 @@ class EventController extends Controller
     {
         $this->authorize('create', Event::class);
 
-        return new EventResource(Event::create($request->validated()));
+        $event = Event::create($request->validated());
+
+        return redirect()->route('events.index')->with('success', 'Event created successfully.');
+    }
+
+    public function create()
+    {
+        $this->authorize('create', Event::class);
+
+        return view('events.create');
     }
 
     public function show(Event $event)

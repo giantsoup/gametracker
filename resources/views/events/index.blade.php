@@ -11,10 +11,36 @@
                 class="overflow-hidden bg-white dark:bg-zinc-800 shadow-sm sm:rounded-lg border border-zinc-200 dark:border-zinc-700">
                 <div class="p-6 bg-white dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700">
                     <div class="space-y-6">
-                        <div>
-                            <h3 class="text-lg font-medium text-zinc-900 dark:text-zinc-100">All Events</h3>
-                            <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">View and manage events.</p>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-lg font-medium text-zinc-900 dark:text-zinc-100">All Events</h3>
+                                <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">View and manage events.</p>
+                            </div>
+                            <div>
+                                <flux:button
+                                    href="{{ route('events.create') }}"
+                                    wire:navigate
+                                    variant="primary"
+                                >
+                                    {{ __('Create Event') }}
+                                </flux:button>
+                            </div>
                         </div>
+
+                        @if(session('success'))
+                            <div class="rounded-md bg-green-50 dark:bg-green-900/20 p-4">
+                                <div class="flex">
+                                    <div class="flex-shrink-0">
+                                        <svg class="h-5 w-5 text-green-400 dark:text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                    <div class="ml-3">
+                                        <h3 class="text-sm font-medium text-green-800 dark:text-green-400">{{ session('success') }}</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
 
                         @if ($events->isEmpty())
                             <div class="rounded-md bg-yellow-50 dark:bg-yellow-900/20 p-4">
