@@ -16,6 +16,10 @@ class Dashboard extends Component
 
     public $displayType = 'default'; // Can be 'projection', 'mobile', or 'default'
 
+    public $activeEventId = null; // Currently selected event ID
+
+    public $events = []; // All active events
+
     public function mount(Request $request)
     {
         // Check if layout is specified in query parameters
@@ -70,12 +74,37 @@ class Dashboard extends Component
 
         skip_detection:
 
+        // Get all active events
+        $this->events = Event::active()->get();
+
+        // Check if event is specified in query parameters
+        if ($request->has('event')) {
+            $eventId = (int) $request->input('event');
+            // Check if the event exists in our active events
+            if ($this->events->contains('id', $eventId)) {
+                $this->activeEventId = $eventId;
+            }
+        }
+
+        // If no event is selected or the selected event doesn't exist, use the first active event
+        if (! $this->activeEventId && $this->events->isNotEmpty()) {
+            $this->activeEventId = $this->events->first()->id;
+        }
     }
 
     public function render()
     {
+        // Get all active events
+        $events = $this->events;
+
         // Get the current active event
-        $activeEvent = Event::active()->first();
+        $activeEvent = $events->firstWhere('id', $this->activeEventId);
+
+        // If no active event is found, use the first one (if available)
+        if (! $activeEvent && $events->isNotEmpty()) {
+            $activeEvent = $events->first();
+            $this->activeEventId = $activeEvent->id;
+        }
 
         // Get current active game if there is an active event
         $currentGame = null;
@@ -113,6 +142,7 @@ class Dashboard extends Component
         }
 
         return view('livewire.dashboard', [
+            'events' => $events,
             'activeEvent' => $activeEvent,
             'currentGame' => $currentGame,
             'gameDuration' => $gameDuration,
@@ -139,6 +169,14 @@ class Dashboard extends Component
             } elseif ($type === 'projection') {
                 $this->activeLayout = 1; // Focus layout is better for projection
             }
+        }
+    }
+
+    public function switchEvent($eventId)
+    {
+        // Check if the event exists in our active events
+        if ($this->events->contains('id', $eventId)) {
+            $this->activeEventId = $eventId;
         }
     }
 }

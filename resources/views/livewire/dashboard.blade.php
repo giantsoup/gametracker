@@ -58,93 +58,152 @@
     @if(app()->environment('local', 'development', 'testing'))
         <x-js-debug />
     @endif
-    <!-- Options Menu - Sticky Header -->
-    <div class="sticky top-0 z-50 bg-white dark:bg-gray-800 shadow-md">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center py-3">
-                <!-- GameTracker Logo/Title -->
-                <div class="flex items-center">
-                    <h1 class="text-xl font-bold text-gray-900 dark:text-white">GameTracker</h1>
+    <!-- GameTracker Logo/Title and Login/Dashboard Link at the top -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+        <div class="flex justify-between items-center">
+            <div class="flex items-center">
+                <h1 class="text-xl font-bold text-gray-900 dark:text-white">GameTracker</h1>
+            </div>
+
+            <!-- Login/Dashboard Link -->
+            <div class="flex items-center">
+                @auth
+                    <a href="{{ route('dashboard') }}" class="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 bg-white dark:bg-gray-800 px-4 py-2 rounded-lg shadow-sm">Dashboard</a>
+                @else
+                    <a href="{{ route('login') }}" class="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 bg-white dark:bg-gray-800 px-4 py-2 rounded-lg shadow-sm">Login</a>
+                @endauth
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Menu Button at bottom right -->
+    <div class="fixed bottom-4 right-4 z-50">
+        <!-- Floating Menu Toggle Button -->
+        <button id="floating-menu-toggle" class="bg-indigo-600 dark:bg-indigo-700 text-white p-3 rounded-full shadow-lg hover:bg-indigo-700 dark:hover:bg-indigo-800 focus:outline-none">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+        </button>
+
+        <!-- Floating Menu Panel -->
+        <div id="floating-menu-panel" class="hidden bg-white dark:bg-gray-800 rounded-lg shadow-xl p-4 mb-2 w-64">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="text-sm font-medium text-gray-900 dark:text-white">Display Options</h3>
+                <button id="close-floating-menu" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Event Switcher -->
+            @if($events->count() > 1)
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Active Events:</label>
+                <div class="space-y-2">
+                    @foreach($events as $event)
+                        <button
+                            wire:click="switchEvent({{ $event->id }})"
+                            class="w-full text-left px-3 py-2 rounded-md text-sm {{ $activeEvent && $activeEvent->id == $event->id ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 font-medium' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' }}"
+                        >
+                            <div class="flex items-center">
+                                @if($activeEvent && $activeEvent->id == $event->id)
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-indigo-600 dark:text-indigo-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                    </svg>
+                                @else
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
+                                    </svg>
+                                @endif
+                                {{ $event->name }}
+                            </div>
+                            @if($event->started_at)
+                                <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                    Started: {{ $event->started_at->format('M d, H:i') }}
+                                </div>
+                            @endif
+                        </button>
+                    @endforeach
                 </div>
+            </div>
+            @endif
 
-                <!-- Options Menu -->
-                <div class="flex items-center space-x-4">
-                    <!-- Display Type Switcher -->
-                    <div class="flex items-center">
-                        <span class="text-sm text-gray-600 dark:text-gray-400 mr-2 hidden sm:inline">Display:</span>
-                        <div class="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
-                            <!-- Using regular links with query parameters instead of Livewire events -->
-                            <a
-                                href="/?display=default{{ $activeLayout ? '&layout='.$activeLayout : '' }}"
-                                class="p-1.5 rounded-md {{ $displayType == 'default' ? 'bg-white dark:bg-gray-800 shadow-sm' : 'text-gray-500 dark:text-gray-400' }} {{ $displayType == 'mobile' ? 'touch-target' : '' }}"
-                                title="Default Display"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2h-2.22l.123.489.804.804A1 1 0 0113 18H7a1 1 0 01-.707-1.707l.804-.804L7.22 15H5a2 2 0 01-2-2V5zm5.771 7H5V5h10v7H8.771z" clip-rule="evenodd" />
-                                </svg>
-                            </a>
-                            <a
-                                href="/?display=projection{{ $activeLayout ? '&layout='.$activeLayout : '' }}"
-                                class="p-1.5 rounded-md {{ $displayType == 'projection' ? 'bg-white dark:bg-gray-800 shadow-sm' : 'text-gray-500 dark:text-gray-400' }} {{ $displayType == 'mobile' ? 'touch-target' : '' }}"
-                                title="Projection Display (1920x1080)"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" />
-                                </svg>
-                            </a>
-                            <a
-                                href="/?display=mobile{{ $activeLayout ? '&layout='.$activeLayout : '' }}"
-                                class="p-1.5 rounded-md {{ $displayType == 'mobile' ? 'bg-white dark:bg-gray-800 shadow-sm' : 'text-gray-500 dark:text-gray-400' }} {{ $displayType == 'mobile' ? 'touch-target' : '' }}"
-                                title="Mobile Display"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M7 2a2 2 0 00-2 2v12a2 2 0 002 2h6a2 2 0 002-2V4a2 2 0 00-2-2H7zm3 14a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
-                                </svg>
-                            </a>
-                        </div>
-                    </div>
+            <!-- Display Type Switcher -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Display Type:</label>
+                <div class="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+                    <!-- Using regular links with query parameters instead of Livewire events -->
+                    <a
+                        href="/?display=default{{ $activeLayout ? '&layout='.$activeLayout : '' }}{{ $activeEvent ? '&event='.$activeEvent->id : '' }}"
+                        class="flex-1 p-1.5 rounded-md text-center {{ $displayType == 'default' ? 'bg-white dark:bg-gray-800 shadow-sm' : 'text-gray-500 dark:text-gray-400' }} {{ $displayType == 'mobile' ? 'touch-target' : '' }}"
+                        title="Default Display"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mx-auto" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2h-2.22l.123.489.804.804A1 1 0 0113 18H7a1 1 0 01-.707-1.707l.804-.804L7.22 15H5a2 2 0 01-2-2V5zm5.771 7H5V5h10v7H8.771z" clip-rule="evenodd" />
+                        </svg>
+                    </a>
+                    <a
+                        href="/?display=projection{{ $activeLayout ? '&layout='.$activeLayout : '' }}{{ $activeEvent ? '&event='.$activeEvent->id : '' }}"
+                        class="flex-1 p-1.5 rounded-md text-center {{ $displayType == 'projection' ? 'bg-white dark:bg-gray-800 shadow-sm' : 'text-gray-500 dark:text-gray-400' }} {{ $displayType == 'mobile' ? 'touch-target' : '' }}"
+                        title="Projection Display (1920x1080)"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mx-auto" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" />
+                        </svg>
+                    </a>
+                    <a
+                        href="/?display=mobile{{ $activeLayout ? '&layout='.$activeLayout : '' }}{{ $activeEvent ? '&event='.$activeEvent->id : '' }}"
+                        class="flex-1 p-1.5 rounded-md text-center {{ $displayType == 'mobile' ? 'bg-white dark:bg-gray-800 shadow-sm' : 'text-gray-500 dark:text-gray-400' }} {{ $displayType == 'mobile' ? 'touch-target' : '' }}"
+                        title="Mobile Display"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mx-auto" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M7 2a2 2 0 00-2 2v12a2 2 0 002 2h6a2 2 0 002-2V4a2 2 0 00-2-2H7zm3 14a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
 
-                    <!-- Layout Switcher -->
-                    <div class="flex items-center">
-                        <span class="text-sm text-gray-600 dark:text-gray-400 mr-2 hidden sm:inline">Layout:</span>
-                        <div class="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
-                            <!-- Using regular links with query parameters instead of Livewire events -->
-                            <a
-                                href="/?layout=1{{ $displayType != 'default' ? '&display='.$displayType : '' }}"
-                                class="p-1.5 rounded-md {{ $activeLayout == 1 ? 'bg-white dark:bg-gray-800 shadow-sm' : 'text-gray-500 dark:text-gray-400' }} {{ $displayType == 'mobile' ? 'touch-target' : '' }}"
-                                title="Layout 1 - Focus on current game"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                    <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM14 11a1 1 0 011 1v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0v-1h-1a1 1 0 110-2h1v-1a1 1 0 011-1z" />
-                                </svg>
-                            </a>
-                            <a
-                                href="/?layout=2{{ $displayType != 'default' ? '&display='.$displayType : '' }}"
-                                class="p-1.5 rounded-md {{ $activeLayout == 2 ? 'bg-white dark:bg-gray-800 shadow-sm' : 'text-gray-500 dark:text-gray-400' }} {{ $displayType == 'mobile' ? 'touch-target' : '' }}"
-                                title="Layout 2 - Split view"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                    <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                                </svg>
-                            </a>
-                            <a
-                                href="/?layout=3{{ $displayType != 'default' ? '&display='.$displayType : '' }}"
-                                class="p-1.5 rounded-md {{ $activeLayout == 3 ? 'bg-white dark:bg-gray-800 shadow-sm' : 'text-gray-500 dark:text-gray-400' }} {{ $displayType == 'mobile' ? 'touch-target' : '' }}"
-                                title="Layout 3 - Card Grid"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                    <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
-                                </svg>
-                            </a>
-                        </div>
-                    </div>
+            <!-- Layout Switcher -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Layout:</label>
+                <div class="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+                    <!-- Using regular links with query parameters instead of Livewire events -->
+                    <a
+                        href="/?layout=1{{ $displayType != 'default' ? '&display='.$displayType : '' }}{{ $activeEvent ? '&event='.$activeEvent->id : '' }}"
+                        class="flex-1 p-1.5 rounded-md text-center {{ $activeLayout == 1 ? 'bg-white dark:bg-gray-800 shadow-sm' : 'text-gray-500 dark:text-gray-400' }} {{ $displayType == 'mobile' ? 'touch-target' : '' }}"
+                        title="Layout 1 - Focus on current game"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mx-auto" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM14 11a1 1 0 011 1v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0v-1h-1a1 1 0 110-2h1v-1a1 1 0 011-1z" />
+                        </svg>
+                    </a>
+                    <a
+                        href="/?layout=2{{ $displayType != 'default' ? '&display='.$displayType : '' }}{{ $activeEvent ? '&event='.$activeEvent->id : '' }}"
+                        class="flex-1 p-1.5 rounded-md text-center {{ $activeLayout == 2 ? 'bg-white dark:bg-gray-800 shadow-sm' : 'text-gray-500 dark:text-gray-400' }} {{ $displayType == 'mobile' ? 'touch-target' : '' }}"
+                        title="Layout 2 - Split view"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mx-auto" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                        </svg>
+                    </a>
+                    <a
+                        href="/?layout=3{{ $displayType != 'default' ? '&display='.$displayType : '' }}{{ $activeEvent ? '&event='.$activeEvent->id : '' }}"
+                        class="flex-1 p-1.5 rounded-md text-center {{ $activeLayout == 3 ? 'bg-white dark:bg-gray-800 shadow-sm' : 'text-gray-500 dark:text-gray-400' }} {{ $displayType == 'mobile' ? 'touch-target' : '' }}"
+                        title="Layout 3 - Card Grid"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mx-auto" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
+                        </svg>
+                    </a>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Main content padding to account for sticky header -->
-    <div class="pt-4">
+    <!-- Main content -->
+    <div>
 
     <!-- Layout 1: Focus on current game with sidebar for upcoming events -->
     @if($activeLayout == 1)
@@ -166,7 +225,14 @@
                                     Running for: {{ $gameDuration }}
                                 </div>
                                 <h2 class="{{ $displayType == 'projection' ? 'text-4xl' : 'text-2xl' }} font-bold text-white">Current Game</h2>
-                                <p class="{{ $displayType == 'projection' ? 'text-xl' : '' }} text-indigo-100">{{ $activeEvent->name }}</p>
+                                <div class="flex items-center">
+                                    <p class="{{ $displayType == 'projection' ? 'text-xl' : '' }} text-indigo-100">{{ $activeEvent->name }}</p>
+                                    @if($events->count() > 1)
+                                        <span class="ml-2 bg-indigo-500 dark:bg-indigo-700 text-white px-2 py-0.5 rounded-full text-xs">
+                                            {{ $events->count() }} active events
+                                        </span>
+                                    @endif
+                                </div>
                             </div>
 
                             <!-- Game Details -->
@@ -320,7 +386,14 @@
                                 <div class="flex justify-between items-start">
                                     <div>
                                         <h3 class="text-2xl font-bold text-gray-900 dark:text-white">{{ $currentGame->name }}</h3>
-                                        <p class="text-gray-600 dark:text-gray-400">{{ $activeEvent->name }}</p>
+                                        <div class="flex items-center">
+                                            <p class="text-gray-600 dark:text-gray-400">{{ $activeEvent->name }}</p>
+                                            @if($events->count() > 1)
+                                                <span class="ml-2 bg-indigo-500 dark:bg-indigo-700 text-white px-2 py-0.5 rounded-full text-xs">
+                                                    {{ $events->count() }} active events
+                                                </span>
+                                            @endif
+                                        </div>
                                     </div>
                                     <div class="bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-300 px-3 py-1 rounded-full text-sm font-medium">
                                         {{ $gameDuration }}
@@ -495,7 +568,14 @@
                             <div class="flex flex-col {{ $displayType == 'mobile' ? '' : 'md:flex-row md:items-center md:justify-between' }}">
                                 <div>
                                     <h3 class="{{ $displayType == 'mobile' ? 'text-xl' : 'text-2xl' }} font-bold text-gray-900 dark:text-white">{{ $currentGame->name }}</h3>
-                                    <p class="{{ $displayType == 'mobile' ? 'text-sm' : '' }} text-gray-600 dark:text-gray-400">{{ $activeEvent->name }}</p>
+                                    <div class="flex items-center">
+                                        <p class="{{ $displayType == 'mobile' ? 'text-sm' : '' }} text-gray-600 dark:text-gray-400">{{ $activeEvent->name }}</p>
+                                        @if($events->count() > 1)
+                                            <span class="ml-2 bg-indigo-500 dark:bg-indigo-700 text-white px-2 py-0.5 rounded-full text-xs">
+                                                {{ $events->count() }} active events
+                                            </span>
+                                        @endif
+                                    </div>
                                 </div>
 
                                 <div class="{{ $displayType == 'mobile' ? 'mt-2' : 'mt-4 md:mt-0' }}">
@@ -627,3 +707,30 @@
     @endif
     </div>
 </div>
+
+<!-- JavaScript for Floating Menu Toggle -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggleButton = document.getElementById('floating-menu-toggle');
+        const closeButton = document.getElementById('close-floating-menu');
+        const menuPanel = document.getElementById('floating-menu-panel');
+
+        // Toggle menu when clicking the settings button
+        toggleButton.addEventListener('click', function() {
+            menuPanel.classList.toggle('hidden');
+        });
+
+        // Close menu when clicking the close button
+        closeButton.addEventListener('click', function() {
+            menuPanel.classList.add('hidden');
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const isClickInside = menuPanel.contains(event.target) || toggleButton.contains(event.target);
+            if (!isClickInside && !menuPanel.classList.contains('hidden')) {
+                menuPanel.classList.add('hidden');
+            }
+        });
+    });
+</script>
