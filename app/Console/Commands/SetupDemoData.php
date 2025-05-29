@@ -50,12 +50,6 @@ class SetupDemoData extends Command
             // Commit the transaction
             DB::commit();
 
-            $this->newLine();
-            $this->info('Demo data has been set up successfully!');
-            $this->info('You can now log in with the following credentials:');
-            $this->info('- Admin: admin@example.com / password');
-            $this->info('- User: user@example.com / password');
-
             return Command::SUCCESS;
         } catch (Throwable $e) {
             // Roll back the transaction in case of an error

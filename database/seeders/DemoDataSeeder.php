@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Enums\UserRole;
 use App\Models\Event;
 use App\Models\Game;
+use App\Models\GamePoint;
 use App\Models\Player;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -33,7 +34,7 @@ class DemoDataSeeder extends Seeder
 
         $this->command->info('Demo data created successfully!');
         $this->command->info('You can now log in with:');
-        $this->command->info('- Admin: admin@example.com / password');
+        $this->command->info('- Admin: helper@example.com / password');
         $this->command->info('- User: user@example.com / password');
     }
 
@@ -46,9 +47,9 @@ class DemoDataSeeder extends Seeder
 
         // Create or update a demo admin user
         User::updateOrCreate(
-            ['email' => 'admin@example.com'],
+            ['email' => 'helper@example.com'],
             [
-                'name' => 'Demo Admin',
+                'name' => 'Helper Admin',
                 'password' => Hash::make('password'),
                 'role' => UserRole::ADMIN,
             ]
@@ -245,7 +246,7 @@ class DemoDataSeeder extends Seeder
                     }
 
                     // Create or update game point
-                    \App\Models\GamePoint::updateOrCreate(
+                    GamePoint::updateOrCreate(
                         [
                             'game_id' => $game->id,
                             'player_id' => $player->user_id,
