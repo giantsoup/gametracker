@@ -45,7 +45,11 @@
                                     {{ $player->nickname ?? '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-zinc-700 dark:text-zinc-300">
-                                    @if ($player->hasLeft())
+                                    @if ($player->trashed())
+                                        <span class="inline-flex items-center rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-800 dark:bg-purple-900/20 dark:text-purple-300">
+                                            Deleted
+                                        </span>
+                                    @elseif ($player->hasLeft())
                                         <span class="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800 dark:bg-red-900/20 dark:text-red-300">
                                             Left
                                         </span>
@@ -67,35 +71,48 @@
                                 </td>
                                 <td class="px-6 py-4 text-right whitespace-nowrap">
                                     <div class="flex justify-end gap-2">
-                                        @if (!$player->hasJoined())
+                                        @if ($player->trashed())
                                             <flux:button
-                                                wire:click="markPlayerJoined({{ $player->id }})"
+                                                wire:click="restorePlayer({{ $player->id }})"
                                                 variant="ghost"
                                                 size="xs"
+                                                class="text-green-500/80 hover:text-green-600 hover:bg-green-50 dark:text-green-400/80 dark:hover:text-green-300 dark:hover:bg-green-950/30"
                                             >
-                                                Mark Joined
+                                                Restore
                                             </flux:button>
-                                        @endif
+                                        @else
+                                            @if (!$player->hasJoined())
+                                                <flux:button
+                                                    wire:click="markPlayerJoined({{ $player->id }})"
+                                                    variant="ghost"
+                                                    size="xs"
+                                                >
+                                                    Mark Joined
+                                                </flux:button>
+                                            @endif
 
-                                        @if ($player->hasJoined() && !$player->hasLeft())
-                                            <flux:button
-                                                wire:click="markPlayerLeft({{ $player->id }})"
-                                                variant="ghost"
-                                                size="xs"
-                                            >
-                                                Mark Left
-                                            </flux:button>
-                                        @endif
+                                            @if ($player->hasJoined() && !$player->hasLeft())
+                                                <flux:button
+                                                    wire:click="markPlayerLeft({{ $player->id }})"
+                                                    variant="ghost"
+                                                    size="xs"
+                                                >
+                                                    Mark Left
+                                                </flux:button>
+                                            @endif
 
-                                        <flux:button
-                                            wire:click="removePlayer({{ $player->id }})"
-                                            wire:confirm="Are you sure you want to remove this player?"
-                                            variant="ghost"
-                                            size="xs"
-                                            class="text-red-500/80 hover:text-red-600 hover:bg-red-50 dark:text-red-400/80 dark:hover:text-red-300 dark:hover:bg-red-950/30"
-                                        >
-                                            Remove
-                                        </flux:button>
+                                            @if ($player->hasLeft())
+                                                <flux:button
+                                                    wire:click="deletePlayer({{ $player->id }})"
+                                                    wire:confirm="Are you sure you want to fully remove this player? This will soft delete the record."
+                                                    variant="ghost"
+                                                    size="xs"
+                                                    class="text-red-500/80 hover:text-red-600 hover:bg-red-50 dark:text-red-400/80 dark:hover:text-red-300 dark:hover:bg-red-950/30"
+                                                >
+                                                    Delete
+                                                </flux:button>
+                                            @endif
+                                        @endif
                                     </div>
                                 </td>
                             </tr>

@@ -11,7 +11,7 @@
         </div>
 
         @if ($showForm)
-            <div class="mt-4 bg-white dark:bg-zinc-800 shadow sm:rounded-lg">
+            <div class="mt-4 bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800 rounded-lg p-5 shadow-sm">
                 <div class="">
                     <div class="space-y-4">
                         <div>

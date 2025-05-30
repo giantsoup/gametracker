@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\EventRequest;
-use App\Http\Resources\EventResource;
 use App\Models\Event;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
@@ -26,7 +25,7 @@ class EventController extends Controller
 
         $event = Event::create($request->validated());
 
-        return redirect()->route('events.index')->with('success', 'Event created successfully.');
+        return redirect()->route('events.show', $event)->with('success', 'Event created successfully.');
     }
 
     public function create()
@@ -71,6 +70,13 @@ class EventController extends Controller
         return view('events.show', compact('event', 'currentGame', 'gameDuration', 'finishedGames', 'upcomingGames'));
     }
 
+    public function edit(Event $event)
+    {
+        $this->authorize('update', $event);
+
+        return view('events.edit', compact('event'));
+    }
+
     public function update(EventRequest $request, Event $event)
     {
         $this->authorize('update', $event);
@@ -82,7 +88,7 @@ class EventController extends Controller
             return redirect()->route('dashboard')->with('success', 'Event updated successfully.');
         }
 
-        return new EventResource($event);
+        return redirect()->route('events.show', $event)->with('success', 'Event updated successfully.');
     }
 
     public function destroy(Event $event)

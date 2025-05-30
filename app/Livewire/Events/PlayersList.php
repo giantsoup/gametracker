@@ -26,8 +26,25 @@ class PlayersList extends Component
 
     public function removePlayer(Player $player)
     {
+        // Mark the player as left instead of deleting
+        $player->leave();
+        $this->dispatch('playerRemoved');
+    }
+
+    public function deletePlayer(Player $player)
+    {
+        // Soft delete the player
         $player->delete();
         $this->dispatch('playerRemoved');
+    }
+
+    public function restorePlayer($playerId)
+    {
+        // Restore a soft-deleted player
+        $player = Player::withTrashed()->findOrFail($playerId);
+        $player->restore();
+        $player->update(['left_at' => null]); // Also clear the left_at timestamp
+        $this->dispatch('playerUpdated');
     }
 
     public function markPlayerLeft(Player $player)
@@ -44,7 +61,7 @@ class PlayersList extends Component
 
     public function getPlayersProperty(): Collection
     {
-        return $this->event->players()->with('user')->latest()->get();
+        return $this->event->players()->with('user')->withTrashed()->latest()->get();
     }
 
     public function render()

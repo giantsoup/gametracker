@@ -57,13 +57,14 @@
                                 </svg>
                                 Edit Event
                             </a>
-                            <a href="{{ route('games.create') }}?event={{ $event->id }}" class="inline-flex items-center px-3 py-2 bg-green-700 border border-transparent rounded-md font-medium text-sm text-white hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 transition-colors">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
-                                </svg>
-                                Add Game
-                            </a>
                         </div>
+                    </div>
+
+                    <!-- Player Management Section -->
+                    <div class="mt-6 bg-blue-100 dark:bg-blue-900/30 p-5 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <h4 class="text-lg font-semibold text-neutral-900 dark:text-neutral-50 mb-4">Player Management</h4>
+                        <livewire:events.players-list :event="$event" />
+                        <livewire:events.create-player-form :event="$event" />
                     </div>
 
                     <!-- Current Game Section -->
@@ -132,14 +133,25 @@
                     @else
                         <div class="mt-6 bg-neutral-100 dark:bg-neutral-800 p-5 rounded-lg text-center border border-neutral-300 dark:border-neutral-600">
                             <p class="text-neutral-700 dark:text-neutral-300 mb-3">No active game for this event.</p>
-                            <a href="{{ route('games.create') }}?event={{ $event->id }}" class="inline-flex items-center px-4 py-2 bg-green-700 border border-transparent rounded-md font-semibold text-sm text-white uppercase tracking-widest hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 transition-colors">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
-                                </svg>
-                                Start a Game
-                            </a>
+                            @if($event->players()->count() > 0)
+                                <a href="{{ route('games.create') }}?event={{ $event->id }}" class="inline-flex items-center px-4 py-2 bg-green-700 border border-transparent rounded-md font-semibold text-sm text-white uppercase tracking-widest hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                                    </svg>
+                                    Start a Game
+                                </a>
+                            @else
+                                <p class="text-amber-600 dark:text-amber-400 mb-3">Please add players to the event before starting a game.</p>
+                            @endif
                         </div>
                     @endif
+
+                    <!-- Game Management Section -->
+                    <div class="mt-6 bg-green-100 dark:bg-green-900/30 p-5 rounded-lg border border-green-200 dark:border-green-800">
+                        <h4 class="text-lg font-semibold text-neutral-900 dark:text-neutral-50 mb-4">Game Management</h4>
+                        <livewire:events.games-list :event="$event" />
+                        <livewire:events.create-game-form :event="$event" />
+                    </div>
 
                     <!-- Upcoming Games Section -->
                     @if($upcomingGames->count() > 0)

@@ -65,12 +65,47 @@ class DemoDataSeeder extends Seeder
             ]
         );
 
-        // Create or update additional demo users
-        for ($i = 1; $i <= 5; $i++) {
+        // Create or update 14 normal users with realistic American names (7 male, 7 female)
+        $maleNames = [
+            'James Smith',
+            'Michael Johnson',
+            'Robert Williams',
+            'David Brown',
+            'William Jones',
+            'Richard Davis',
+            'Thomas Miller',
+        ];
+
+        $femaleNames = [
+            'Jennifer Garcia',
+            'Sarah Rodriguez',
+            'Jessica Martinez',
+            'Emily Wilson',
+            'Ashley Anderson',
+            'Elizabeth Taylor',
+            'Samantha Thomas',
+        ];
+
+        // Create male users
+        foreach ($maleNames as $index => $name) {
+            $emailPrefix = strtolower(explode(' ', $name)[0]);
             User::updateOrCreate(
-                ['email' => "player$i@example.com"],
+                ['email' => "{$emailPrefix}@example.com"],
                 [
-                    'name' => "Player $i",
+                    'name' => $name,
+                    'password' => Hash::make('password'),
+                    'role' => UserRole::USER,
+                ]
+            );
+        }
+
+        // Create female users
+        foreach ($femaleNames as $index => $name) {
+            $emailPrefix = strtolower(explode(' ', $name)[0]);
+            User::updateOrCreate(
+                ['email' => "{$emailPrefix}@example.com"],
+                [
+                    'name' => $name,
                     'password' => Hash::make('password'),
                     'role' => UserRole::USER,
                 ]

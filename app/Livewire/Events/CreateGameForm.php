@@ -68,6 +68,13 @@ class CreateGameForm extends Component
     {
         $this->validate();
 
+        // Check if there are any players in the event
+        if ($this->event->players()->count() === 0) {
+            $this->addError('selectedPlayerIds', 'You need to add players to the event before creating games.');
+
+            return;
+        }
+
         $game = Game::create([
             'name' => $this->name,
             'duration' => $this->duration,
