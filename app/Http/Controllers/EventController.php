@@ -39,20 +39,8 @@ class EventController extends Controller
     {
         $this->authorize('view', $event);
 
-        // Get current active game (most recent)
-        $currentGame = $event->games()->latest()->first();
-
-        // Calculate game duration if there's a current game and the event has started
-        $gameDuration = null;
-        if ($currentGame && $event->started_at) {
-            $gameDuration = now()->diffForHumans($event->started_at, true);
-        }
-
-        // Get finished games for the event (excluding the current game)
+        // Get finished games for the event
         $finishedGames = $event->games()
-            ->when($currentGame, function ($query) use ($currentGame) {
-                return $query->where('id', '!=', $currentGame->id);
-            })
             ->whereNotNull('created_at')
             ->orderBy('created_at', 'desc')
             ->take(5)
@@ -67,7 +55,7 @@ class EventController extends Controller
             ->take(5)
             ->get();
 
-        return view('events.show', compact('event', 'currentGame', 'gameDuration', 'finishedGames', 'upcomingGames'));
+        return view('events.show', compact('event', 'finishedGames', 'upcomingGames'));
     }
 
     public function edit(Event $event)
