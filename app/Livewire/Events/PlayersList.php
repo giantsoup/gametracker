@@ -5,6 +5,7 @@ namespace App\Livewire\Events;
 use App\Models\Event;
 use App\Models\Player;
 use Illuminate\Support\Collection;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -14,10 +15,15 @@ class PlayersList extends Component
 
     public Event $event;
 
-    protected $listeners = [
-        'playerAdded' => '$refresh',
-        'playerRemoved' => '$refresh',
-    ];
+    public bool $isExpanded = false;
+
+    #[On('playerAdded')]
+    #[On('playerRemoved')]
+    public function refreshPlayersList()
+    {
+        // This method will be called when the playerAdded or playerRemoved event is dispatched
+        // No need to do anything here, Livewire will automatically re-render the component
+    }
 
     public function mount(Event $event)
     {
@@ -57,6 +63,11 @@ class PlayersList extends Component
     {
         $player->join();
         $this->dispatch('playerUpdated');
+    }
+
+    public function toggleExpanded()
+    {
+        $this->isExpanded = ! $this->isExpanded;
     }
 
     public function getPlayersProperty(): Collection

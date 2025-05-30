@@ -5,6 +5,7 @@ namespace App\Livewire\Events;
 use App\Models\Event;
 use App\Models\Game;
 use Illuminate\Support\Collection;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class CreateGameForm extends Component
@@ -19,9 +20,9 @@ class CreateGameForm extends Component
 
     public bool $showForm = false;
 
-    public int $totalPoints = 9; // Default total points
+    public int $totalPoints = 15; // Default total points
 
-    public int $pointsRecipients = 3; // Default number of recipients
+    public int $pointsRecipients = 5; // Default number of recipients
 
     public ?array $pointsDistribution = null; // Custom points distribution
 
@@ -49,8 +50,8 @@ class CreateGameForm extends Component
         $this->showForm = ! $this->showForm;
         $this->reset(['name', 'duration', 'selectedPlayerIds', 'totalPoints', 'pointsRecipients', 'pointsDistribution']);
         $this->duration = 60; // Reset to default
-        $this->totalPoints = 9; // Reset to default
-        $this->pointsRecipients = 3; // Reset to default
+        $this->totalPoints = 15; // Reset to default
+        $this->pointsRecipients = 5; // Reset to default
     }
 
     /**
@@ -90,8 +91,8 @@ class CreateGameForm extends Component
 
         $this->reset(['name', 'duration', 'selectedPlayerIds', 'totalPoints', 'pointsRecipients', 'pointsDistribution', 'showForm']);
         $this->duration = 60; // Reset to default
-        $this->totalPoints = 9; // Reset to default
-        $this->pointsRecipients = 3; // Reset to default
+        $this->totalPoints = 15; // Reset to default
+        $this->pointsRecipients = 5; // Reset to default
         $this->dispatch('gameAdded');
     }
 

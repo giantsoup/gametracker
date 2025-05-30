@@ -6,6 +6,7 @@ use App\Models\Event;
 use App\Models\Player;
 use App\Models\User;
 use Illuminate\Support\Collection;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class CreatePlayerForm extends Component
@@ -20,11 +21,14 @@ class CreatePlayerForm extends Component
         'selectedUserIds' => 'array',
     ];
 
-    protected $listeners = [
-        'playerUpdated' => '$refresh',
-        'playerRemoved' => '$refresh',
-        'refresh' => '$refresh',
-    ];
+    #[On('playerUpdated')]
+    #[On('playerRemoved')]
+    #[On('refresh')]
+    public function refreshComponent()
+    {
+        // This method will be called when any of the events are dispatched
+        // No need to do anything here, Livewire will automatically re-render the component
+    }
 
     public function mount(Event $event)
     {

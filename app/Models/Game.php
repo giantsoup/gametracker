@@ -92,9 +92,11 @@ class Game extends Model
     public static function getDefaultPointsDistribution(): array
     {
         return [
-            1 => 5, // 1st place: 5 points
-            2 => 3, // 2nd place: 3 points
-            3 => 1, // 3rd place: 1 point
+            1 => 6, // 1st place: 6 points
+            2 => 4, // 2nd place: 4 points
+            3 => 3, // 3rd place: 3 points
+            4 => 1, // 4th place: 1 point
+            5 => 1, // 5th place: 1 point
         ];
     }
 

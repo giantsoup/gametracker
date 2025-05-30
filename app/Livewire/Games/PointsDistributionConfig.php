@@ -15,12 +15,12 @@ class PointsDistributionConfig extends Component
     /**
      * The total points to distribute.
      */
-    public int $totalPoints = 9;
+    public int $totalPoints = 15;
 
     /**
      * The number of players who will receive points.
      */
-    public int $pointsRecipients = 3;
+    public int $pointsRecipients = 5;
 
     /**
      * The points distribution array.

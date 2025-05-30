@@ -1,7 +1,7 @@
 <div>
     <div class="space-y-4">
         <div class="flex items-center justify-between">
-            <h3 class="text-lg font-medium text-zinc-900 dark:text-zinc-100">Games</h3>
+            <h3 class="text-lg font-medium text-neutral-900 dark:text-neutral-100">Games</h3>
         </div>
 
         @if ($games->isEmpty())
@@ -21,30 +21,30 @@
                 </div>
             </div>
         @else
-            <div class="overflow-x-auto rounded-lg border border-zinc-200 shadow-sm dark:border-zinc-700">
-                <table class="min-w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-700">
-                    <thead class="bg-zinc-50 dark:bg-zinc-800">
+            <div class="overflow-x-auto rounded-lg border border-neutral-200 shadow-sm dark:border-neutral-700">
+                <table class="min-w-full divide-y divide-neutral-200 text-sm dark:divide-neutral-700">
+                    <thead class="bg-neutral-50 dark:bg-neutral-800">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Game</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Duration</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Owners</th>
-                            <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Game</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Duration</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Owners</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
                                 Actions
                             </th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-zinc-200 bg-white dark:divide-zinc-700 dark:bg-zinc-900">
+                    <tbody class="divide-y divide-neutral-200 bg-white dark:divide-neutral-700 dark:bg-neutral-900">
                         @foreach ($games as $game)
                             <tr class="transition-colors">
-                                <td class="px-6 py-4 whitespace-nowrap text-zinc-700 dark:text-zinc-300">
+                                <td class="px-6 py-4 whitespace-nowrap text-neutral-700 dark:text-neutral-300">
                                     {{ $game->name }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-zinc-700 dark:text-zinc-300">
+                                <td class="px-6 py-4 whitespace-nowrap text-neutral-700 dark:text-neutral-300">
                                     {{ $game->getDurationForHumans() }}
                                 </td>
-                                <td class="px-6 py-4 text-zinc-700 dark:text-zinc-300">
+                                <td class="px-6 py-4 text-neutral-700 dark:text-neutral-300">
                                     @if ($game->owners->isEmpty())
-                                        <span class="text-zinc-500 dark:text-zinc-400">No owners</span>
+                                        <span class="text-neutral-500 dark:text-neutral-400">No owners</span>
                                     @else
                                         <div class="flex flex-wrap gap-1">
                                             @foreach ($game->owners as $owner)
