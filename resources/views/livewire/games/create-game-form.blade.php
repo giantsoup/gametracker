@@ -7,6 +7,8 @@ use function Livewire\Volt\{state, rules, mount, computed, protect};
 // Define state properties
 state([
     'name' => '',
+    'description' => '',
+    'rules' => '',
     'event_id' => null,
     'duration' => 60,
     'events' => [],
@@ -26,6 +28,8 @@ mount(function ($parentId = null) {
 // Set validation rules
 rules([
     'name' => ['required', 'string', 'max:255'],
+    'description' => ['nullable', 'string'],
+    'rules' => ['nullable', 'string'],
     'event_id' => ['required', 'exists:events,id'],
     'duration' => ['required', 'integer', 'min:15'],
 ])->messages([
@@ -41,12 +45,15 @@ $create = function () {
     try {
         $game = Game::create([
             'name' => $this->name,
+            'description' => $this->description,
+            'rules' => $this->rules,
             'event_id' => $this->event_id,
             'duration' => $this->duration,
+            'status' => \App\Enums\GameStatus::Unplayed,
         ]);
 
         // Reset form fields
-        $this->reset(['name', 'duration']);
+        $this->reset(['name', 'description', 'rules', 'duration']);
 
         // Show a success message
         session()->flash('success', 'Game created successfully');
@@ -75,6 +82,20 @@ $create = function () {
             required
             autofocus
             autocomplete="name"
+        />
+
+        <flux:textarea
+            wire:model="description"
+            :label="__('Description')"
+            :description="__('A brief description of the game')"
+            rows="3"
+        />
+
+        <flux:textarea
+            wire:model="rules"
+            :label="__('Rules')"
+            :description="__('List the rules of the game. Use line breaks for numbered steps.')"
+            rows="5"
         />
 
         <flux:select

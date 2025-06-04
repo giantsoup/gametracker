@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Redirect;
 state([
     'game' => null,
     'name' => '',
+    'description' => '',
+    'rules' => '',
     'event_id' => null,
     'duration' => 60,
     'events' => [],
@@ -19,6 +21,8 @@ state([
 // Set validation rules
 rules([
     'name' => ['required', 'string', 'max:255'],
+    'description' => ['nullable', 'string'],
+    'rules' => ['nullable', 'string'],
     'event_id' => ['required', 'exists:events,id'],
     'duration' => ['required', 'integer', 'min:15'],
 ])->messages([
@@ -34,6 +38,8 @@ mount(function ($game, $parentId = null) {
 
     // Initialize form fields with game data
     $this->name = $game->name;
+    $this->description = $game->description;
+    $this->rules = $game->rules;
     $this->event_id = $game->event_id;
     $this->duration = $game->duration;
 
@@ -55,6 +61,8 @@ $update = function () {
     try {
         $this->game->update([
             'name' => $this->name,
+            'description' => $this->description,
+            'rules' => $this->rules,
             'event_id' => $this->event_id,
             'duration' => $this->duration,
         ]);
@@ -96,6 +104,20 @@ $update = function () {
             required
             autofocus
             autocomplete="name"
+        />
+
+        <flux:textarea
+            wire:model="description"
+            :label="__('Description')"
+            :description="__('A brief description of the game')"
+            rows="3"
+        />
+
+        <flux:textarea
+            wire:model="rules"
+            :label="__('Rules')"
+            :description="__('List the rules of the game. Use line breaks for numbered steps.')"
+            rows="5"
         />
 
         <flux:select

@@ -9,7 +9,7 @@
                     id="totalPoints"
                     wire:model.live="totalPoints"
                     min="1"
-                    class="mt-1 block w-full rounded-lg border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 focus:border-indigo-500 focus:ring-indigo-500 cursor-pointer shadow-sm py-2 h-10 leading-[1.375rem] px-3 transition-colors"
+                    class="mt-1 block w-full rounded-lg border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-700 text-neutral-700 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 cursor-pointer shadow-sm py-2 h-10 leading-[1.375rem] px-3 transition-colors"
                 >
                 <flux:text class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
                     Total number of points available for this game
@@ -24,7 +24,7 @@
                     id="pointsRecipients"
                     wire:model.live="pointsRecipients"
                     min="1"
-                    class="mt-1 block w-full rounded-lg border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 focus:border-indigo-500 focus:ring-indigo-500 cursor-pointer shadow-sm py-2 h-10 leading-[1.375rem] px-3 transition-colors"
+                    class="mt-1 block w-full rounded-lg border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-700 text-neutral-700 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 cursor-pointer shadow-sm py-2 h-10 leading-[1.375rem] px-3 transition-colors"
                 >
                 <flux:text class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
                     How many top players will receive points
@@ -95,7 +95,7 @@
                                         type="number"
                                         wire:model.live="pointsDistribution.{{ $placement }}"
                                         min="0"
-                                        class="w-20 rounded-lg border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 focus:border-indigo-500 focus:ring-indigo-500 cursor-pointer shadow-sm py-1.5 h-8 leading-[1.125rem] px-2 text-sm transition-colors"
+                                        class="w-20 rounded-lg border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-700 text-neutral-700 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 cursor-pointer shadow-sm py-1.5 h-8 leading-[1.125rem] px-2 text-sm transition-colors"
                                     >
                                 @else
                                     <div class="text-neutral-700 dark:text-neutral-300 font-medium">

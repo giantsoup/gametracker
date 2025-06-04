@@ -24,6 +24,14 @@ Route::middleware(['auth'])->group(function () {
     // Game Routes
     Route::resource('games', App\Http\Controllers\GameController::class);
 
+    // Event Runner Routes
+    Route::get('event-runner', App\Livewire\EventRunner::class)->name('event-runner.show');
+    Route::get('event-runner-vercel', App\Livewire\EventRunnerVercel::class)->name('event-runner-vercel.show');
+    Volt::route('event-runner-vercel-volt', 'event-runner-vercel-volt')->name('event-runner-vercel-volt.show');
+
+    // Game Points Routes
+    Route::get('games/{game}/points/wizard', App\Livewire\GamePoints\PlacementWizard::class)->name('games.points.wizard');
+
     Route::middleware(['admin'])->group(function () {
         Route::get('admin/settings', [AdminController::class, 'settings'])->name('admin.settings');
         Route::get('admin/analytics', [AdminController::class, 'analytics'])->name('admin.analytics');

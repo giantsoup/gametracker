@@ -1,0 +1,10 @@
+<div>
+    <x-event-runner-dashboard
+        :event="$event"
+        :currentlyPlayingGames="$currentlyPlayingGames"
+        :readyToStartGames="$readyToStartGames"
+        :finishedGames="$finishedGames"
+        :backgroundGames="$backgroundGames"
+        :groupedEvents="$groupedEvents"
+    />
+</div>

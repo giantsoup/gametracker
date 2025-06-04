@@ -190,16 +190,38 @@ class DemoDataSeeder extends Seeder
                 $totalPoints = $pointsDistribution ? array_sum($pointsDistribution) : 9; // Default is 9 (5+3+1)
                 $pointsRecipients = $pointsDistribution ? count($pointsDistribution) : 3; // Default is 3
 
+                // Sample game descriptions and rules
+                $gameDescriptions = [
+                    'A strategic board game where players compete to build settlements, cities, and roads on the island of Catan.',
+                    'A cooperative card game where players work together to defeat the ancient ones before time runs out.',
+                    'A deck-building game where players assume the role of a monarch, using their cards to perform actions.',
+                    'A tile-placement game where players compete to build the most valuable road networks, cities, and fields.',
+                    'A worker placement game where players take on the roles of ancient civilizations building their empires.',
+                    'A party game where players create funny and absurd card combinations to win points.',
+                ];
+
+                $gameRules = [
+                    "1. Setup the board with hexagonal terrain tiles.\n2. Each player starts with 2 settlements and 2 roads.\n3. On your turn, roll dice for resource production, then trade and build.\n4. First player to reach 10 victory points wins.",
+                    "1. Choose your investigator and ancient one.\n2. Setup the game board with monsters and gates.\n3. Each round consists of movement, encounters, and mythos phases.\n4. Seal gates or defeat the ancient one to win.",
+                    "1. Start with 7 cards in hand and 3 estates and 7 coppers in your deck.\n2. On your turn: play action cards, buy cards, cleanup.\n3. Game ends when Province pile or any 3 piles are empty.\n4. Player with most victory points wins.",
+                    "1. Draw and place a tile on your turn.\n2. Place a meeple on the tile if desired.\n3. Score completed features.\n4. Most points at the end wins.",
+                    "1. Place workers on the board to gather resources.\n2. Use resources to build structures and advance your civilization.\n3. Feed your population each round.\n4. Most victory points at game end wins.",
+                    "1. Each player starts with 10 white cards.\n2. One player is the judge and plays a black card.\n3. Other players submit a white card to complete the phrase.\n4. Judge picks the funniest combination, and that player gets a point.",
+                ];
+
                 $game = Game::updateOrCreate(
                     [
                         'name' => "Game $i for $event->name",
                         'event_id' => $event->id,
                     ],
                     [
-                        'duration' => rand(30, 180), // 30 minutes to 3 hours
+                        'description' => $gameDescriptions[array_rand($gameDescriptions)],
+                        'rules' => $gameRules[array_rand($gameRules)],
+                        'duration' => [30, 45, 60][array_rand([30, 45, 60])], // Only 30, 45, or 60 minutes
                         'total_points' => $totalPoints,
                         'points_recipients' => $pointsRecipients,
                         'points_distribution' => $pointsDistribution,
+                        'status' => \App\Enums\GameStatus::Ready,
                     ]
                 );
 
@@ -215,24 +237,67 @@ class DemoDataSeeder extends Seeder
             foreach ($users as $user) {
                 // Randomly decide if this user participates in this event
                 if (rand(0, 1)) {
+                    // Gaming-related nicknames that sound more natural
+                    $nicknames = [
+                        'DiceRoller',
+                        'StrategyMaster',
+                        'CardShark',
+                        'BoardGameGeek',
+                        'MeepleManiac',
+                        'VictoryPoint',
+                        'TableTop',
+                        'GameMaster',
+                        'TokenCollector',
+                        'RuleKeeper',
+                        'FirstPlayer',
+                        'LuckyRoll',
+                        'ChessPro',
+                        'GameWizard',
+                    ];
+
                     $player = Player::updateOrCreate(
                         [
                             'user_id' => $user->id,
                             'event_id' => $event->id,
                         ],
                         [
-                            'nickname' => rand(0, 1) ? 'Gamer '.substr($user->name, -1) : null,
+                            'nickname' => rand(0, 1) ? $nicknames[array_rand($nicknames)] : null,
                             'joined_at' => $event->started_at ?? ($event->starts_at < now() ? now() : null),
                             'left_at' => $event->ended_at,
                         ]
                     );
+                }
+            }
 
-                    // Get games for this event
-                    $games = $event->games()->inRandomOrder()->take(rand(1, 3))->get();
+            // Assign owners to games (max 2 owners per game)
+            $games = $event->games;
+            $eventPlayers = $event->players;
 
-                    // For each game, add this player as an owner
-                    foreach ($games as $game) {
-                        $game->owners()->syncWithoutDetaching([$player->id]);
+            if ($eventPlayers->isNotEmpty()) {
+                foreach ($games as $game) {
+                    // Determine number of owners (1 or 2)
+                    $numOwners = rand(1, 2);
+
+                    // Get random players for this game
+                    $gameOwners = $eventPlayers->shuffle()->take($numOwners);
+
+                    // Clear existing owners and assign new ones
+                    $game->owners()->detach();
+
+                    // Assign owners to the game
+                    foreach ($gameOwners as $owner) {
+                        $game->owners()->attach($owner->id);
+                    }
+
+                    // For the current game in the current event, add all players as active players
+                    if ($event->name === 'Current Game Night' && $game === $event->games()->latest()->first()) {
+                        // Clear existing players
+                        $game->players()->detach();
+
+                        // Add all event players to the game
+                        foreach ($eventPlayers as $player) {
+                            $game->players()->attach($player->id);
+                        }
                     }
                 }
             }

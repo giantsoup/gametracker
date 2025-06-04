@@ -34,6 +34,38 @@
                             @enderror
                         </div>
 
+                        <!-- Description Field -->
+                        <div>
+                            <flux:textarea
+                                wire:model="description"
+                                id="description"
+                                label="Description"
+                                placeholder="Enter a brief description of the game"
+                                rows="3"
+                            />
+                            @error('description')
+                                <flux:text class="mt-2 text-sm !text-red-600 !dark:text-red-400">
+                                    {{ $message }}
+                                </flux:text>
+                            @enderror
+                        </div>
+
+                        <!-- Rules Field -->
+                        <div>
+                            <flux:textarea
+                                wire:model="gameRules"
+                                id="gameRules"
+                                label="Rules"
+                                placeholder="List the rules of the game. Use line breaks for numbered steps."
+                                rows="5"
+                            />
+                            @error('gameRules')
+                                <flux:text class="mt-2 text-sm !text-red-600 !dark:text-red-400">
+                                    {{ $message }}
+                                </flux:text>
+                            @enderror
+                        </div>
+
                         <!-- Duration Field -->
                         <div>
                             <flux:label for="duration" value="Duration (minutes)"/>

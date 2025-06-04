@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Events;
 
+use App\Enums\GameStatus;
 use App\Models\Event;
 use App\Models\Game;
 use Illuminate\Support\Collection;
@@ -13,6 +14,10 @@ class CreateGameForm extends Component
     public Event $event;
 
     public string $name = '';
+
+    public ?string $description = null;
+
+    public ?string $gameRules = null;
 
     public int $duration = 60; // Default to 60 minutes (1 hour)
 
@@ -28,6 +33,8 @@ class CreateGameForm extends Component
 
     protected $rules = [
         'name' => 'required|string|max:255',
+        'description' => 'nullable|string',
+        'gameRules' => 'nullable|string',
         'duration' => 'required|integer|min:15|multiple_of:15',
         'selectedPlayerIds' => 'array',
         'selectedPlayerIds.*' => 'exists:players,id',
@@ -48,7 +55,7 @@ class CreateGameForm extends Component
     public function toggleForm()
     {
         $this->showForm = ! $this->showForm;
-        $this->reset(['name', 'duration', 'selectedPlayerIds', 'totalPoints', 'pointsRecipients', 'pointsDistribution']);
+        $this->reset(['name', 'description', 'gameRules', 'duration', 'selectedPlayerIds', 'totalPoints', 'pointsRecipients', 'pointsDistribution']);
         $this->duration = 60; // Reset to default
         $this->totalPoints = 15; // Reset to default
         $this->pointsRecipients = 5; // Reset to default
@@ -78,18 +85,31 @@ class CreateGameForm extends Component
 
         $game = Game::create([
             'name' => $this->name,
+            'description' => $this->description,
+            'rules' => $this->gameRules,
             'duration' => $this->duration,
             'event_id' => $this->event->id,
             'total_points' => $this->totalPoints,
             'points_recipients' => $this->pointsRecipients,
             'points_distribution' => $this->pointsDistribution,
+            'status' => GameStatus::Unplayed,
         ]);
 
+        // Get all players in the event
+        $allEventPlayerIds = $this->event->players()->pluck('id')->toArray();
+
+        // Attach selected players as owners
         if (! empty($this->selectedPlayerIds)) {
             $game->owners()->attach($this->selectedPlayerIds);
         }
 
-        $this->reset(['name', 'duration', 'selectedPlayerIds', 'totalPoints', 'pointsRecipients', 'pointsDistribution', 'showForm']);
+        // Add all players in the event (except owners) as players
+        $nonOwnerPlayerIds = array_diff($allEventPlayerIds, $this->selectedPlayerIds);
+        if (! empty($nonOwnerPlayerIds)) {
+            $game->players()->attach($nonOwnerPlayerIds);
+        }
+
+        $this->reset(['name', 'description', 'gameRules', 'duration', 'selectedPlayerIds', 'totalPoints', 'pointsRecipients', 'pointsDistribution', 'showForm']);
         $this->duration = 60; // Reset to default
         $this->totalPoints = 15; // Reset to default
         $this->pointsRecipients = 5; // Reset to default

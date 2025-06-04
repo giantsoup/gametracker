@@ -2,8 +2,11 @@
 
 namespace App\Livewire;
 
+use App\Enums\GameStatus;
 use App\Models\Event;
 use App\Models\Game;
+use App\Models\GamePoint;
+use App\Models\Player;
 use Illuminate\Http\Request;
 use Livewire\Component;
 
@@ -70,9 +73,9 @@ class LoggedInDashboard extends Component
             // Get the current active game (most recent)
             $currentGame = $activeEvent->games()->latest()->first();
 
-            if ($currentGame && $activeEvent->started_at) {
-                // Calculate how long the current game has been going on
-                $gameDuration = now()->diffForHumans($activeEvent->started_at, true);
+            if ($currentGame) {
+                // Calculate game duration based on the game's timing information
+                $gameDuration = $currentGame->getTotalDurationForHumans();
             }
 
             // Get finished games for the current event (excluding the current game)
@@ -289,12 +292,44 @@ class LoggedInDashboard extends Component
             return;
         }
 
-        // Add player to game if not already added
-        if (! $game->owners->contains($player->id)) {
-            $game->owners()->attach($player->id);
+        // Add player to the game's players relationship to mark them as playing
+        $statusKey = 'status_in_game_'.$game->id;
+        if ($player->$statusKey === 'not_playing') {
+            $game->players()->attach($player->id);
+
+            // Flash a success message
+            session()->flash('message', $player->display_name.' added to the game successfully.');
+            session()->flash('message-type', 'success');
         }
 
         $this->selectedPlayerId = null;
+    }
+
+    /**
+     * Add a player directly to a game without using the dropdown.
+     * This is used from the "Available Players" table.
+     */
+    public function addPlayerDirectlyToGame($gameId, $playerId)
+    {
+        $game = Game::find($gameId);
+        if (! $game) {
+            return;
+        }
+
+        $player = Player::find($playerId);
+        if (! $player) {
+            return;
+        }
+
+        // Add player to the game's players relationship to mark them as playing
+        $statusKey = 'status_in_game_'.$game->id;
+        if ($player->$statusKey === 'not_playing') {
+            $game->players()->attach($player->id);
+
+            // Flash a success message
+            session()->flash('message', $player->display_name.' added to the game successfully.');
+            session()->flash('message-type', 'success');
+        }
     }
 
     public function removePlayerFromGame($gameId, $playerId)
@@ -304,12 +339,63 @@ class LoggedInDashboard extends Component
             return;
         }
 
+        $player = Player::find($playerId);
+        if (! $player) {
+            return;
+        }
+
+        // Remove player from owners relationship
         $game->owners()->detach($playerId);
+
+        // Also remove player from players relationship
+        $game->players()->detach($playerId);
+
+        // Flash a success message
+        session()->flash('message', $player->display_name.' removed from the game.');
+        session()->flash('message-type', 'success');
     }
 
     public function loadAvailablePlayers($eventId)
     {
         $this->availablePlayers = Player::where('event_id', $eventId)->get();
+    }
+
+    /**
+     * Mark a player as having left a game.
+     */
+    public function markPlayerLeftGame($gameId, $playerId)
+    {
+        $game = Game::find($gameId);
+        $player = Player::find($playerId);
+
+        if (! $game || ! $player) {
+            return;
+        }
+
+        if ($game->markPlayerLeft($player)) {
+            // Flash a success message
+            session()->flash('message', $player->display_name.' marked as left the game.');
+            session()->flash('message-type', 'success');
+        }
+    }
+
+    /**
+     * Mark a player as active in a game (not left).
+     */
+    public function markPlayerActiveInGame($gameId, $playerId)
+    {
+        $game = Game::find($gameId);
+        $player = Player::find($playerId);
+
+        if (! $game || ! $player) {
+            return;
+        }
+
+        if ($game->markPlayerActive($player)) {
+            // Flash a success message
+            session()->flash('message', $player->display_name.' marked as playing again.');
+            session()->flash('message-type', 'success');
+        }
     }
 
     private function resetPlayerForm()
@@ -421,6 +507,130 @@ class LoggedInDashboard extends Component
         $this->pointsPlacement = 1;
     }
 
+    /**
+     * Quick assign points to players based on their order in the game.
+     * This uses the default points distribution from the game.
+     */
+    public function quickAssignPoints($gameId)
+    {
+        $game = Game::find($gameId);
+        if (! $game) {
+            return;
+        }
+
+        // Get the points distribution from the game or use the default
+        $distribution = $game->points_distribution ?? Game::getDefaultPointsDistribution();
+
+        // Sort by placement (key)
+        ksort($distribution);
+
+        // Get all owners of the game
+        $owners = $game->owners;
+
+        // If there are no owners, return
+        if ($owners->isEmpty()) {
+            return;
+        }
+
+        // Assign points to each owner based on their position in the owners collection
+        foreach ($owners as $index => $owner) {
+            // Placement is 1-based, so add 1 to the index
+            $placement = $index + 1;
+
+            // Get points for this placement from the distribution, or 0 if not defined
+            $points = $distribution[$placement] ?? 0;
+
+            // Check if points already exist for this player
+            $gamePoint = $game->points()->where('player_id', $owner->id)->first();
+
+            if ($gamePoint) {
+                // Update existing points
+                $gamePoint->update([
+                    'points' => $points,
+                    'placement' => $placement,
+                    'last_modified_by' => auth()->id(),
+                    'last_modified_at' => now(),
+                ]);
+            } else {
+                // Create new points
+                GamePoint::create([
+                    'game_id' => $game->id,
+                    'player_id' => $owner->id,
+                    'points' => $points,
+                    'placement' => $placement,
+                    'assigned_by' => auth()->id(),
+                    'assigned_at' => now(),
+                ]);
+            }
+        }
+
+        // Set game status to Played
+        $game->setStatus(GameStatus::Played);
+    }
+
+    /**
+     * Finalize a game by marking it as played and prompting for points assignment.
+     */
+    public function finalizeGame($gameId)
+    {
+        $game = Game::find($gameId);
+        if (! $game) {
+            return;
+        }
+
+        // Stop the game if it's running
+        if ($game->isRunning()) {
+            $game->stopGame();
+        }
+
+        // Set game status to Played
+        $game->setStatus(GameStatus::Played);
+
+        // Quick assign points
+        $this->quickAssignPoints($gameId);
+    }
+
+    // Game status and timer methods
+    public function startGame($gameId)
+    {
+        $game = Game::find($gameId);
+        if (! $game) {
+            return;
+        }
+
+        $game->startGame();
+    }
+
+    public function stopGame($gameId)
+    {
+        $game = Game::find($gameId);
+        if (! $game) {
+            return;
+        }
+
+        $game->stopGame();
+    }
+
+    public function setGameStatus($gameId, $status)
+    {
+        $game = Game::find($gameId);
+        if (! $game) {
+            return;
+        }
+
+        switch ($status) {
+            case 'unplayed':
+                $game->setStatus(GameStatus::Unplayed);
+                break;
+            case 'active':
+                $game->setStatus(GameStatus::Active);
+                break;
+            case 'played':
+                $game->setStatus(GameStatus::Played);
+                break;
+        }
+    }
+
     // New game creation
     public $isCreatingGame = false;
 
@@ -460,6 +670,7 @@ class LoggedInDashboard extends Component
             'name' => $this->newGameName,
             'duration' => $duration,
             'event_id' => $this->activeEventId,
+            'status' => GameStatus::Unplayed,
         ]);
 
         $this->isCreatingGame = false;

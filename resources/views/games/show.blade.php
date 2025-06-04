@@ -31,6 +31,20 @@
                                 </p>
                             </div>
 
+                            <div class="sm:col-span-2">
+                                <h4 class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Description</h4>
+                                <p class="mt-1 text-sm text-zinc-900 dark:text-zinc-100">
+                                    {{ $game->description ?? 'No description available' }}
+                                </p>
+                            </div>
+
+                            <div class="sm:col-span-2">
+                                <h4 class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Rules</h4>
+                                <div class="mt-1 text-sm text-zinc-900 dark:text-zinc-100 whitespace-pre-line">
+                                    {{ $game->rules ?? 'No rules available' }}
+                                </div>
+                            </div>
+
                             <div>
                                 <h4 class="text-sm font-medium text-zinc-500 dark:text-zinc-400">Duration</h4>
                                 <p class="mt-1 text-sm text-zinc-900 dark:text-zinc-100">
@@ -71,6 +85,13 @@
                             </flux:button>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Game Timer Section -->
+            <div class="mt-6 overflow-hidden bg-white dark:bg-zinc-800 shadow-sm sm:rounded-lg border border-zinc-200 dark:border-zinc-700">
+                <div class="p-6 bg-white dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700">
+                    <livewire:games.game-timer :game="$game" />
                 </div>
             </div>
 

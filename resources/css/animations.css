@@ -1,0 +1,175 @@
+/**
+ * GameTracker Animations and Visual Feedback
+ *
+ * This file contains CSS animations and transitions for enhancing the user experience.
+ * It implements Task 7.1: Visual Feedback and Animations
+ * - Loading states for all actions
+ * - Success/error notifications
+ * - Smooth transitions between states
+ * - Hover/focus states for interactive elements
+ */
+
+/* Smooth transitions for all interactive elements */
+.transition-all {
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+}
+
+/* Hover/focus states for interactive elements */
+.hover-scale {
+    transition: transform 0.15s ease-in-out;
+}
+
+.hover-scale:hover,
+.hover-scale:focus {
+    transform: scale(1.02);
+}
+
+/* Button hover effects */
+button:not([disabled]):hover,
+[role="button"]:not([disabled]):hover,
+a.button:not([disabled]):hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+button:not([disabled]):active,
+[role="button"]:not([disabled]):active,
+a.button:not([disabled]):active {
+    transform: translateY(0);
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+/* Loading animation */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Success animation */
+@keyframes success-checkmark {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.success-animation {
+    animation: success-checkmark 0.5s ease-in-out forwards;
+}
+
+/* Error animation */
+@keyframes error-shake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    10%, 30%, 50%, 70%, 90% {
+        transform: translateX(-5px);
+    }
+    20%, 40%, 60%, 80% {
+        transform: translateX(5px);
+    }
+}
+
+.error-animation {
+    animation: error-shake 0.6s ease-in-out;
+}
+
+/* Notification styles */
+.notification {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    z-index: 50;
+    max-width: 24rem;
+    display: flex;
+    align-items: center;
+    transform: translateX(120%);
+    transition: transform 0.3s ease-in-out;
+}
+
+.notification.show {
+    transform: translateX(0);
+}
+
+.notification-success {
+    background-color: #d1fae5;
+    border-left: 4px solid #10b981;
+    color: #065f46;
+}
+
+.notification-error {
+    background-color: #fee2e2;
+    border-left: 4px solid #ef4444;
+    color: #b91c1c;
+}
+
+.notification-info {
+    background-color: #dbeafe;
+    border-left: 4px solid #3b82f6;
+    color: #1e40af;
+}
+
+/* Mobile navigation styles */
+.active-section svg {
+    color: #3b82f6;
+}
+
+.active-section span {
+    color: #3b82f6;
+    font-weight: 500;
+}
+
+/* Game card transition effects */
+.game-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.game-card:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Status change transitions */
+.status-transition {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Quick action menu animation */
+.quick-action-menu {
+    transition: transform 0.3s ease;
+}
+
+/* Bottom navigation bar active indicator */
+.bottom-nav-indicator {
+    position: absolute;
+    bottom: 0;
+    height: 3px;
+    background-color: #3b82f6;
+    transition: transform 0.3s ease, width 0.3s ease;
+}
+
+/* Focus visible styles for accessibility */
+:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}

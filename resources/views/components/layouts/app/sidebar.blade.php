@@ -21,6 +21,12 @@
             <flux:navlist.item icon="puzzle-piece" :href="route('games.index')"
                                :current="request()->routeIs('games.index') || request()->routeIs('games.*')"
                                wire:navigate>{{ __('Games') }}</flux:navlist.item>
+            <flux:navlist.item icon="play" :href="route('event-runner.show')"
+                    :current="request()->routeIs('event-runner.show')"
+                    wire:navigate>{{ __('Event Runner') }}</flux:navlist.item>
+            <flux:navlist.item icon="play" :href="route('event-runner-vercel.show')"
+                    :current="request()->routeIs('event-runner-vercel.show')"
+                    wire:navigate>{{ __('Event Runner Vercel') }}</flux:navlist.item>
         </flux:navlist.group>
     </flux:navlist>
 
