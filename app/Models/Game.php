@@ -22,6 +22,7 @@ class Game extends Model
         'name',
         'duration',
         'event_id',
+        'status_id',
         'total_points',
         'points_recipients',
         'points_distribution',
@@ -48,6 +49,14 @@ class Game extends Model
     public function event(): BelongsTo
     {
         return $this->belongsTo(Event::class);
+    }
+
+    /**
+     * Get the status of the game.
+     */
+    public function status(): BelongsTo
+    {
+        return $this->belongsTo(GameStatus::class);
     }
 
     /**
