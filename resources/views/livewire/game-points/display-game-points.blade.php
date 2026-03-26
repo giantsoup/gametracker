@@ -48,7 +48,7 @@
                                     <div class="text-sm text-zinc-900 dark:text-zinc-100">
                                         @if($point['placement'])
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300">
-                                                {{ $point['placement'] }}{{ __('st') }}
+                                                {{ \Illuminate\Support\Number::ordinal($point['placement']) }}
                                             </span>
                                         @else
                                             <span class="text-zinc-500 dark:text-zinc-400">-</span>
