@@ -9,6 +9,15 @@
 .env
 .env.backup
 .env.production
+/AGENTS.md
+/.agents
+/.codex
+/.junie/mcp
+/.junie/skills
+/.mcp.json
+/boost.json
+/CLAUDE.md
+/opencode.json
 .phpactor.json
 .phpunit.result.cache
 Homestead.json
@@ -22,3 +31,4 @@ yarn-error.log
 /.vscode
 /.zed
 /.docs
+/.ai
