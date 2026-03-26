@@ -47,7 +47,10 @@ test('display game points shows ordinal placement suffixes', function () {
         ->assertSee('11th')
         ->assertSee('12th')
         ->assertSee('13th')
-        ->assertSee('14th');
+        ->assertSee('14th')
+        ->assertSee('bg-amber-100', false)
+        ->assertSee('bg-slate-100', false)
+        ->assertSee('bg-orange-100', false);
 });
 
 test('player total breakdown shows ordinal placement suffixes', function () {
@@ -72,10 +75,14 @@ test('player total breakdown shows ordinal placement suffixes', function () {
 
     Livewire::test(PlayerTotalPoints::class, ['user' => $user])
         ->call('toggleBreakdown')
+        ->assertSee('1st Place')
         ->assertSee('2nd')
         ->assertSee('3rd')
         ->assertSee('11th')
         ->assertSee('12th')
         ->assertSee('13th')
-        ->assertSee('14th');
+        ->assertSee('14th')
+        ->assertSee('bg-amber-100', false)
+        ->assertSee('bg-slate-100', false)
+        ->assertSee('bg-orange-100', false);
 });

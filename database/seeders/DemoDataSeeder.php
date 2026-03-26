@@ -347,6 +347,8 @@ class DemoDataSeeder extends Seeder
                 'event_id' => $event->id,
                 'name' => $gameBlueprint['name'],
                 'duration' => $gameBlueprint['duration'],
+                'total_points' => Game::DEFAULT_TOTAL_POINTS,
+                'points_distribution' => Game::defaultPointsDistribution(),
             ]);
 
             $participants = $this->participantsForGame($corePlayers, $benchPlayers, $index);
@@ -435,7 +437,7 @@ class DemoDataSeeder extends Seeder
             GamePoint::create([
                 'game_id' => $game->id,
                 'player_id' => $player->user_id,
-                'points' => $this->pointsForPlacement($placement + 1),
+                'points' => $game->pointsForPlacement($placement + 1),
                 'placement' => $placement + 1,
                 'assigned_by' => $admin->id,
                 'assigned_at' => $assignedAt,
@@ -443,15 +445,5 @@ class DemoDataSeeder extends Seeder
                 'last_modified_at' => null,
             ]);
         }
-    }
-
-    private function pointsForPlacement(int $placement): int
-    {
-        return match ($placement) {
-            1 => 5,
-            2 => 3,
-            3 => 1,
-            default => 0,
-        };
     }
 }

@@ -2,7 +2,9 @@
 
 namespace App\Livewire\GamePoints;
 
+use App\Models\Game;
 use App\Models\GamePoint;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -14,9 +16,14 @@ class ModifyPoints extends Component
     public int $gamePointId;
 
     /**
-     * The game point model instance.
+     * The player attached to the points record.
      */
-    protected GamePoint $gamePoint;
+    public User $player;
+
+    /**
+     * The game attached to the points record.
+     */
+    public Game $game;
 
     /**
      * The points value.
@@ -34,9 +41,11 @@ class ModifyPoints extends Component
     public function mount(int $gamePoint): void
     {
         $this->gamePointId = $gamePoint;
-        $this->gamePoint = GamePoint::findOrFail($gamePoint);
-        $this->points = $this->gamePoint->points;
-        $this->placement = $this->gamePoint->placement;
+        $gamePointRecord = GamePoint::with('game')->findOrFail($gamePoint);
+        $this->player = $gamePointRecord->player;
+        $this->game = $gamePointRecord->game;
+        $this->points = $gamePointRecord->points;
+        $this->placement = $gamePointRecord->placement;
     }
 
     /**
@@ -46,7 +55,32 @@ class ModifyPoints extends Component
     {
         $this->validate();
 
-        $this->gamePoint->update([
+        $gamePoint = GamePoint::findOrFail($this->gamePointId);
+
+        if ($this->placement !== null) {
+            $placementAlreadyAssigned = GamePoint::query()
+                ->where('game_id', $gamePoint->game_id)
+                ->where('placement', $this->placement)
+                ->whereKeyNot($gamePoint->id)
+                ->exists();
+
+            if ($placementAlreadyAssigned) {
+                $this->addError('placement', 'Each placement may only be assigned once per game.');
+
+                return;
+            }
+        }
+
+        if ($this->placement === null) {
+            $gamePoint->delete();
+            $this->dispatch('points-updated');
+
+            return;
+        }
+
+        $this->points = $this->game->pointsForPlacement($this->placement);
+
+        $gamePoint->update([
             'points' => $this->points,
             'placement' => $this->placement,
             'last_modified_by' => Auth::id(),
@@ -64,7 +98,6 @@ class ModifyPoints extends Component
     public function rules(): array
     {
         return [
-            'points' => 'required|integer|min:0',
             'placement' => 'nullable|integer|min:1',
         ];
     }
@@ -77,9 +110,6 @@ class ModifyPoints extends Component
     public function messages(): array
     {
         return [
-            'points.required' => 'Points are required.',
-            'points.integer' => 'Points must be a whole number.',
-            'points.min' => 'Points cannot be negative.',
             'placement.integer' => 'Placement must be a whole number.',
             'placement.min' => 'Placement must be at least 1.',
         ];
@@ -90,32 +120,16 @@ class ModifyPoints extends Component
      */
     public function calculatePointsFromPlacement(): void
     {
-        if ($this->placement === null) {
-            return;
-        }
+        $gamePoint = GamePoint::with('game')->findOrFail($this->gamePointId);
 
-        // Apply points based on placement according to business rules
-        switch ($this->placement) {
-            case 1:
-                $this->points = 5;
-                break;
-            case 2:
-                $this->points = 3;
-                break;
-            case 3:
-                $this->points = 1;
-                break;
-            default:
-                $this->points = 0;
-                break;
-        }
+        $this->points = $gamePoint->game->pointsForPlacement($this->placement);
     }
 
     public function render()
     {
         return view('livewire.game-points.modify-points', [
-            'player' => $this->gamePoint->player,
-            'game' => $this->gamePoint->game,
+            'player' => $this->player,
+            'game' => $this->game,
         ]);
     }
 }

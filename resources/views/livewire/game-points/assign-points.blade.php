@@ -1,64 +1,67 @@
 <div class="w-full">
     <div class="space-y-4">
-        @if(count($players) === 0)
-            <div class="text-center py-4">
+        @if($placements->isEmpty())
+            <div class="py-4 text-center">
+                <p class="text-zinc-500 dark:text-zinc-400">No scoring placements have been configured for this game.</p>
+            </div>
+        @elseif($game->owners->isEmpty())
+            <div class="py-4 text-center">
                 <p class="text-zinc-500 dark:text-zinc-400">No players found for this game.</p>
             </div>
         @else
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
-                    <thead class="bg-zinc-50 dark:bg-zinc-800">
+            <div class="rounded-lg bg-zinc-50 px-4 py-3 text-sm text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                {{ __('Configured scoring: :distribution (:total total points)', ['distribution' => $game->formattedPointsDistribution(), 'total' => $game->total_points]) }}
+            </div>
+
+            <div class="overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800">
+                <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
+                    <thead class="bg-zinc-50 dark:bg-zinc-900/60">
                         <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                                Player
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                                 Placement
                             </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                                Player
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                                 Points
                             </th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white dark:bg-zinc-900 divide-y divide-zinc-200 dark:divide-zinc-800">
-                        @foreach($players as $player)
+                    <tbody class="divide-y divide-zinc-200 bg-white dark:divide-zinc-800 dark:bg-zinc-900">
+                        @foreach($placements as $placement)
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
-                                        <div class="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                                            {{ $player['name'] }}
-                                            @if($player['nickname'])
-                                                <span class="text-xs text-zinc-500 dark:text-zinc-400">({{ $player['nickname'] }})</span>
-                                            @endif
-                                        </div>
-                                    </div>
+                                    <x-placement-badge :placement="$placement['number']" />
+                                </td>
+                                <td class="px-6 py-4">
+                                    <flux:select
+                                        wire:model.live="selectedPlayers.{{ $placement['number'] }}"
+                                        wire:key="assign-placement-{{ $placement['number'] }}-{{ md5(json_encode($selectedPlayers)) }}"
+                                        placeholder="Select a player"
+                                    >
+                                        <flux:select.option value="">
+                                            {{ __('Select a player') }}
+                                        </flux:select.option>
+
+                                        @foreach($placement['players'] as $player)
+                                            <flux:select.option value="{{ $player['id'] }}">
+                                                {{ $player['display_name'] }}
+                                                @if($player['nickname'] && $player['nickname'] !== $player['name'])
+                                                    ({{ $player['name'] }})
+                                                @endif
+                                            </flux:select.option>
+                                        @endforeach
+                                    </flux:select>
+
+                                    @error("selectedPlayers.{$placement['number']}")
+                                        <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                    @enderror
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
-                                        <input
-                                            type="number"
-                                            wire:model="placements.{{ $player['id'] }}"
-                                            wire:change="calculatePointsFromPlacement({{ $player['id'] }})"
-                                            min="1"
-                                            class="w-20 rounded-md border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                        >
-                                        @error("placements.{$player['id']}")
-                                            <span class="text-red-600 text-xs ml-2">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
-                                        <input
-                                            type="number"
-                                            wire:model="playerPoints.{{ $player['id'] }}"
-                                            min="0"
-                                            class="w-20 rounded-md border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                        >
-                                        @error("playerPoints.{$player['id']}")
-                                            <span class="text-red-600 text-xs ml-2">{{ $message }}</span>
-                                        @enderror
-                                    </div>
+                                    <span class="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                                        {{ $placement['points'] }}
+                                    </span>
                                 </td>
                             </tr>
                         @endforeach
@@ -66,12 +69,28 @@
                 </table>
             </div>
 
-            <div class="flex justify-end mt-4">
+            <div class="flex justify-end gap-3">
+                <flux:modal.close>
+                    <flux:button variant="outline">
+                        {{ __('Close') }}
+                    </flux:button>
+                </flux:modal.close>
+
+                <flux:button
+                    wire:click="resetSelections"
+                    wire:loading.attr="disabled"
+                    variant="outline"
+                >
+                    {{ __('Reset') }}
+                </flux:button>
+
                 <flux:button
                     wire:click="savePoints"
+                    wire:loading.attr="disabled"
                     variant="primary"
                 >
-                    {{ __('Save Points') }}
+                    <span wire:loading.remove wire:target="savePoints">{{ __('Save Points') }}</span>
+                    <span wire:loading wire:target="savePoints">{{ __('Saving...') }}</span>
                 </flux:button>
             </div>
         @endif

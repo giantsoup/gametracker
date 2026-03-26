@@ -72,3 +72,33 @@ test('game can be force deleted', function () {
     expect(Game::count())->toBe(0);
     expect(Game::withTrashed()->count())->toBe(0);
 });
+
+test('game resolves points by placement from its configured distribution', function () {
+    $game = Game::factory()->create([
+        'total_points' => 10,
+        'points_distribution' => [6, 3, 1],
+    ]);
+
+    expect($game->pointsForPlacement(1))->toBe(6)
+        ->and($game->pointsForPlacement(2))->toBe(3)
+        ->and($game->pointsForPlacement(3))->toBe(1)
+        ->and($game->pointsForPlacement(4))->toBe(0)
+        ->and($game->pointsForPlacement(null))->toBe(0)
+        ->and($game->formattedPointsDistribution())->toBe('6, 3, 1');
+});
+
+test('game validates points distribution input against the total points', function () {
+    expect(Game::normalizePointsDistribution([6, '3', -1], 4))->toBe([6, 3, 0, 0])
+        ->and(Game::pointsDistributionArrayValidationMessage([6, 3, 1], 10, 3))->toBeNull()
+        ->and(Game::pointsDistributionArrayValidationMessage('6, 3, 1', 10, 3))->toBe('Points distribution must be a list of placement values.')
+        ->and(Game::pointsDistributionArrayValidationMessage([6, 3], 9, 3))->toBe('Points distribution must include 3 placements.')
+        ->and(Game::pointsDistributionArrayValidationMessage([6, 'three', 1], 10, 3))->toBe('Each placement value must be a whole number.')
+        ->and(Game::pointsDistributionArrayValidationMessage([6, -3, 1], 4, 3))->toBe('Placement values cannot be negative.')
+        ->and(Game::pointsDistributionArrayValidationMessage([6, 3, 1], 12, 3))->toBe('Points distribution must add up to 12.');
+});
+
+test('game can generate a balanced default distribution for any placement count', function () {
+    expect(Game::defaultPointsDistribution())->toBe(Game::DEFAULT_POINTS_DISTRIBUTION)
+        ->and(Game::defaultPointsDistribution(11, 5))->toBe([4, 3, 2, 1, 1])
+        ->and(Game::defaultPointsDistribution(12, 4))->toBe([5, 4, 2, 1]);
+});

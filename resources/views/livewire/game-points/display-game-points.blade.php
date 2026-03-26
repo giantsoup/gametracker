@@ -47,9 +47,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-zinc-900 dark:text-zinc-100">
                                         @if($point['placement'])
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300">
-                                                {{ \Illuminate\Support\Number::ordinal($point['placement']) }}
-                                            </span>
+                                            <x-placement-badge :placement="$point['placement']" />
                                         @else
                                             <span class="text-zinc-500 dark:text-zinc-400">-</span>
                                         @endif
@@ -84,28 +82,30 @@
                                     </td>
                                 @endif
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <a href="#"
-                                       x-data=""
-                                       x-on:click.prevent="$dispatch('open-modal', 'modify-points-modal-{{ $point['id'] }}')"
-                                       class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
-                                        {{ __('Edit') }}
-                                    </a>
+                                    <flux:modal.trigger name="modify-points-modal-{{ $point['id'] }}">
+                                        <button
+                                            type="button"
+                                            class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                                        >
+                                            {{ __('Edit') }}
+                                        </button>
+                                    </flux:modal.trigger>
 
-                                    <!-- Modify Points Modal -->
-                                    <x-modal name="modify-points-modal-{{ $point['id'] }}" :show="false" maxWidth="2xl">
+                                    <flux:modal name="modify-points-modal-{{ $point['id'] }}" class="max-w-2xl">
                                         <div class="p-6">
                                             <livewire:game-points.modify-points :gamePoint="$point['id']" :key="'modify-'.$point['id']" />
 
                                             <div class="mt-6 flex justify-end">
-                                                <flux:button
-                                                    x-on:click="$dispatch('close')"
-                                                    variant="outline"
-                                                >
-                                                    {{ __('Close') }}
-                                                </flux:button>
+                                                <flux:modal.close>
+                                                    <flux:button
+                                                        variant="outline"
+                                                    >
+                                                        {{ __('Close') }}
+                                                    </flux:button>
+                                                </flux:modal.close>
                                             </div>
                                         </div>
-                                    </x-modal>
+                                    </flux:modal>
                                 </td>
                             </tr>
                         @endforeach

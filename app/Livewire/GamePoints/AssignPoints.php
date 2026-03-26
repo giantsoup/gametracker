@@ -4,7 +4,10 @@ namespace App\Livewire\GamePoints;
 
 use App\Models\Game;
 use App\Models\GamePoint;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 class AssignPoints extends Component
@@ -15,99 +18,122 @@ class AssignPoints extends Component
     public Game $game;
 
     /**
-     * Array of player points, keyed by player ID.
+     * The selected player for each placement, keyed by placement number.
      *
-     * @var array<int, int>
+     * @var array<int, int|string|null>
      */
-    public array $playerPoints = [];
-
-    /**
-     * Array of player placements, keyed by player ID.
-     *
-     * @var array<int, int|null>
-     */
-    public array $placements = [];
+    public array $selectedPlayers = [];
 
     /**
      * Initialize the component with the game.
      */
     public function mount(Game $game): void
     {
-        $this->game = $game;
+        $this->game = $game->load(['owners.user', 'points']);
 
-        // Initialize playerPoints and placements arrays with existing data if available
-        foreach ($this->game->owners as $player) {
-            $gamePoint = GamePoint::where('game_id', $this->game->id)
-                ->where('player_id', $player->user_id)
-                ->first();
+        $existingPoints = $this->game->points
+            ->whereBetween('placement', [1, $this->placementCount()])
+            ->keyBy('placement');
 
-            if ($gamePoint) {
-                $this->playerPoints[$player->user_id] = $gamePoint->points;
-                $this->placements[$player->user_id] = $gamePoint->placement;
-            } else {
-                $this->playerPoints[$player->user_id] = 0;
-                $this->placements[$player->user_id] = null;
-            }
+        foreach (range(1, $this->placementCount()) as $placement) {
+            $this->selectedPlayers[$placement] = $existingPoints->get($placement)?->player_id;
         }
     }
 
     /**
-     * Save the points for all players in the game.
+     * Save the configured placements for the game.
      */
     public function savePoints(): void
     {
         $this->validate();
 
+        if (! $this->selectedPlayersAreUnique()) {
+            return;
+        }
+
         $now = now();
         $currentUser = Auth::id();
+        $placementCount = $this->placementCount();
 
-        foreach ($this->playerPoints as $playerId => $points) {
-            // Skip if points are 0 and no placement
-            if ($points == 0 && empty($this->placements[$playerId])) {
-                continue;
-            }
+        DB::transaction(function () use ($currentUser, $now, $placementCount): void {
+            $existingPoints = GamePoint::query()
+                ->where('game_id', $this->game->id)
+                ->get()
+                ->keyBy('placement');
 
-            // Check if a record already exists
-            $gamePoint = GamePoint::where('game_id', $this->game->id)
-                ->where('player_id', $playerId)
-                ->first();
+            foreach (range(1, $placementCount) as $placement) {
+                $selectedPlayerId = $this->normalizedSelectedPlayer($placement);
+                $existingPoint = $existingPoints->get($placement);
 
-            if ($gamePoint) {
-                // Update existing record
-                $gamePoint->update([
-                    'points' => $points,
-                    'placement' => $this->placements[$playerId] ?? null,
-                    'last_modified_by' => $currentUser,
-                    'last_modified_at' => $now,
-                ]);
-            } else {
-                // Create new record
+                if ($selectedPlayerId === null) {
+                    if ($existingPoint !== null) {
+                        $existingPoint->delete();
+                    }
+
+                    continue;
+                }
+
+                $points = $this->game->pointsForPlacement($placement);
+
+                if ($existingPoint !== null) {
+                    $existingPoint->update([
+                        'player_id' => $selectedPlayerId,
+                        'points' => $points,
+                        'placement' => $placement,
+                        'last_modified_by' => $currentUser,
+                        'last_modified_at' => $now,
+                    ]);
+
+                    continue;
+                }
+
                 GamePoint::create([
                     'game_id' => $this->game->id,
-                    'player_id' => $playerId,
+                    'player_id' => $selectedPlayerId,
                     'points' => $points,
-                    'placement' => $this->placements[$playerId] ?? null,
+                    'placement' => $placement,
                     'assigned_by' => $currentUser,
                     'assigned_at' => $now,
                 ]);
             }
-        }
+
+            GamePoint::query()
+                ->where('game_id', $this->game->id)
+                ->where('placement', '>', $placementCount)
+                ->delete();
+        });
 
         $this->dispatch('points-saved');
+        $this->dispatch('modal-close', name: 'assign-points-modal');
+    }
+
+    /**
+     * Clear the current in-modal selections so placements can be reassigned from scratch.
+     */
+    public function resetSelections(): void
+    {
+        foreach (range(1, $this->placementCount()) as $placement) {
+            $this->selectedPlayers[$placement] = null;
+        }
+
+        $this->resetValidation();
     }
 
     /**
      * Define validation rules.
      *
-     * @return array<string, string>
+     * @return array<string, mixed>
      */
     public function rules(): array
     {
         $rules = [];
 
-        foreach (array_keys($this->playerPoints) as $playerId) {
-            $rules["playerPoints.{$playerId}"] = 'integer|min:0';
-            $rules["placements.{$playerId}"] = 'nullable|integer|min:1';
+        foreach (range(1, $this->placementCount()) as $placement) {
+            $rules["selectedPlayers.{$placement}"] = [
+                'nullable',
+                'integer',
+                Rule::in($this->availablePlayerIds()),
+            ];
         }
 
         return $rules;
@@ -121,49 +147,98 @@ class AssignPoints extends Component
     public function messages(): array
     {
         return [
-            'playerPoints.*.integer' => 'Points must be a whole number.',
-            'playerPoints.*.min' => 'Points cannot be negative.',
-            'placements.*.integer' => 'Placement must be a whole number.',
-            'placements.*.min' => 'Placement must be at least 1.',
+            'selectedPlayers.*.integer' => 'Please select a valid player.',
+            'selectedPlayers.*.in' => 'Please select a player who is part of this game.',
         ];
     }
 
     /**
-     * Automatically calculate points based on placement.
+     * @return list<int>
      */
-    public function calculatePointsFromPlacement(int $playerId): void
+    public function availablePlayerIds(): array
     {
-        $placement = $this->placements[$playerId] ?? null;
-
-        if ($placement === null) {
-            return;
-        }
-
-        // Apply points based on placement according to business rules
-        switch ($placement) {
-            case 1:
-                $this->playerPoints[$playerId] = 5;
-                break;
-            case 2:
-                $this->playerPoints[$playerId] = 3;
-                break;
-            case 3:
-                $this->playerPoints[$playerId] = 1;
-                break;
-            default:
-                $this->playerPoints[$playerId] = 0;
-                break;
-        }
+        return $this->game->owners
+            ->pluck('user_id')
+            ->map(static fn (mixed $playerId): int => (int) $playerId)
+            ->values()
+            ->all();
     }
 
-    public function render()
+    /**
+     * @return array<int, array{id: int, name: string, nickname: ?string, display_name: string}>
+     */
+    public function availablePlayersForPlacement(int $placement): array
     {
-        return view('livewire.game-points.assign-points', [
-            'players' => $this->game->owners->map(function ($player) {
+        $selectedPlayerIds = collect($this->selectedPlayers)
+            ->except($placement)
+            ->filter(static fn (mixed $playerId): bool => filled($playerId))
+            ->map(static fn (mixed $playerId): int => (int) $playerId)
+            ->all();
+
+        return $this->game->owners
+            ->reject(static fn ($player): bool => in_array($player->user_id, $selectedPlayerIds, true))
+            ->sortBy(fn ($player): string => mb_strtolower($player->display_name))
+            ->map(static function ($player): array {
                 return [
-                    'id' => $player->user_id,
+                    'id' => (int) $player->user_id,
                     'name' => $player->user->name,
                     'nickname' => $player->nickname,
+                    'display_name' => $player->display_name,
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
+    protected function selectedPlayersAreUnique(): bool
+    {
+        $duplicatePlayerIds = collect($this->selectedPlayers)
+            ->filter(static fn (mixed $playerId): bool => filled($playerId))
+            ->map(static fn (mixed $playerId): int => (int) $playerId)
+            ->countBy()
+            ->filter(static fn (int $count): bool => $count > 1)
+            ->keys();
+
+        if ($duplicatePlayerIds->isEmpty()) {
+            return true;
+        }
+
+        foreach ($this->selectedPlayers as $placement => $playerId) {
+            if ($playerId !== null && $playerId !== '' && $duplicatePlayerIds->contains((int) $playerId)) {
+                $this->addError(
+                    "selectedPlayers.{$placement}",
+                    'Each player may only be assigned to one placement.',
+                );
+            }
+        }
+
+        return false;
+    }
+
+    protected function placementCount(): int
+    {
+        return count($this->game->pointsDistribution());
+    }
+
+    protected function normalizedSelectedPlayer(int $placement): ?int
+    {
+        $selectedPlayerId = $this->selectedPlayers[$placement] ?? null;
+
+        if (! filled($selectedPlayerId)) {
+            return null;
+        }
+
+        return (int) $selectedPlayerId;
+    }
+
+    public function render(): View
+    {
+        return view('livewire.game-points.assign-points', [
+            'placements' => collect(range(1, $this->placementCount()))->map(function (int $placement): array {
+                return [
+                    'number' => $placement,
+                    'points' => $this->game->pointsForPlacement($placement),
+                    'players' => $this->availablePlayersForPlacement($placement),
                 ];
             }),
         ]);

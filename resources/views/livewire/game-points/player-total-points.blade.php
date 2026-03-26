@@ -25,22 +25,22 @@
                     <dd class="mt-1 text-sm text-zinc-900 dark:text-zinc-100 sm:mt-0 sm:col-span-2">
                         <div class="flex space-x-4">
                             <div class="flex flex-col items-center">
-                                <span class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300">
+                                <x-placement-badge :placement="1" class="h-8 w-8 justify-center px-0 text-sm">
                                     {{ $placementStats['first'] }}
-                                </span>
-                                <span class="text-xs mt-1">1st Place</span>
+                                </x-placement-badge>
+                                <x-placement-badge :placement="1" suffix="Place" class="mt-1" />
                             </div>
                             <div class="flex flex-col items-center">
-                                <span class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-zinc-100 text-zinc-800 dark:bg-zinc-700 dark:text-zinc-300">
+                                <x-placement-badge :placement="2" class="h-8 w-8 justify-center px-0 text-sm">
                                     {{ $placementStats['second'] }}
-                                </span>
-                                <span class="text-xs mt-1">2nd Place</span>
+                                </x-placement-badge>
+                                <x-placement-badge :placement="2" suffix="Place" class="mt-1" />
                             </div>
                             <div class="flex flex-col items-center">
-                                <span class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300">
+                                <x-placement-badge :placement="3" class="h-8 w-8 justify-center px-0 text-sm">
                                     {{ $placementStats['third'] }}
-                                </span>
-                                <span class="text-xs mt-1">3rd Place</span>
+                                </x-placement-badge>
+                                <x-placement-badge :placement="3" suffix="Place" class="mt-1" />
                             </div>
                         </div>
                     </dd>
@@ -87,9 +87,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-zinc-900 dark:text-zinc-100">
                                         @if($point['placement'])
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300">
-                                                {{ \Illuminate\Support\Number::ordinal($point['placement']) }}
-                                            </span>
+                                            <x-placement-badge :placement="$point['placement']" />
                                         @else
                                             <span class="text-zinc-500 dark:text-zinc-400">-</span>
                                         @endif

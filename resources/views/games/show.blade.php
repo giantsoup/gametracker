@@ -43,6 +43,14 @@
                     <p class="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">Created</p>
                     <p class="mt-1 text-sm text-zinc-900 dark:text-zinc-100">{{ $game->created_at->format('F j, Y g:i A') }}</p>
                 </div>
+                <div>
+                    <p class="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">Total Points</p>
+                    <p class="mt-1 text-sm text-zinc-900 dark:text-zinc-100">{{ $game->total_points }}</p>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">Points Distribution</p>
+                    <p class="mt-1 text-sm text-zinc-900 dark:text-zinc-100">{{ $game->formattedPointsDistribution() }}</p>
+                </div>
             </div>
         </div>
 
@@ -50,22 +58,23 @@
         <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-5 sm:p-6">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-base font-semibold text-zinc-900 dark:text-zinc-100">Game Points</h2>
-                <flux:button
-                    x-data=""
-                    x-on:click.prevent="$dispatch('open-modal', 'assign-points-modal')"
-                    variant="primary"
-                    size="sm"
-                >
-                    {{ __('Assign Points') }}
-                </flux:button>
+                <flux:modal.trigger name="assign-points-modal">
+                    <flux:button
+                        variant="primary"
+                        size="sm"
+                    >
+                        {{ __('Assign Points') }}
+                    </flux:button>
+                </flux:modal.trigger>
             </div>
-            <p class="text-sm text-zinc-500 dark:text-zinc-400 mb-4">Points assigned to players for this game.</p>
+            <p class="text-sm text-zinc-500 dark:text-zinc-400 mb-4">
+                {{ __('Points assigned to players for this game using the configured placement distribution.') }}
+            </p>
             <livewire:game-points.display-game-points :game="$game" />
         </div>
     </div>
 
-    {{-- Assign Points Modal --}}
-    <x-modal name="assign-points-modal" :show="false" maxWidth="2xl">
+    <flux:modal name="assign-points-modal" class="max-w-2xl">
         <div class="p-6">
             <h2 class="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
                 {{ __('Assign Points for') }} {{ $game->name }}
@@ -74,12 +83,6 @@
             <div class="mt-6">
                 <livewire:game-points.assign-points :game="$game" />
             </div>
-
-            <div class="mt-6 flex justify-end">
-                <flux:button x-on:click="$dispatch('close')" variant="outline">
-                    {{ __('Close') }}
-                </flux:button>
-            </div>
         </div>
-    </x-modal>
+    </flux:modal>
 </x-layouts.app>
